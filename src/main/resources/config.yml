@@ -1,20 +1,18 @@
-config-version: 6
+config-version: 7
 
 starting-draft-credits: 300
 starting-game-credits: 100
 
+# Season 2: 4 teams. /team create refuses more than this.
+max-teams: 4
+
 rewards:
-  captain-kill: 25
-  tier-a-kill: 15
-  tier-b-kill: 10
-  tier-c-kill: 10
-  # King of the Hill: most seconds holding the hill
-  koth:
-    1st: 125
-    2nd: 100
-    3rd: 75
-    4th: 50
-    5th: 25
+  # Kill rewards by the victim's tier (S = captains)
+  captain-kill: 30
+  tier-a-kill: 25
+  tier-b-kill: 20
+  tier-c-kill: 15
+  tier-d-kill: 10
   # Team Deathmatch (/ffa or /tdm) placings: placed by when each team is wiped out, last team standing = 1st
   ffa:
     1st: 125
@@ -44,11 +42,11 @@ freefall:
   damage-per-block: 1.0   # damage per second per block outside the border
   # center-x / center-z are set with /freefall center (default: world spawn)
 
-# Draft auctions (/bid nominate <player>, then captains type /bid)
+# Draft auctions: /bid nominate <player>. No timer - captains right-click the bid items in their hotbar,
+# and the admin who nominated right-clicks SOLD (or types /bid sold) to end it.
 draft:
-  auction-seconds: 30        # how long each player is up for auction
-  bid-increment: 5           # every bid is exactly this much higher: 5, 10, 15, 20...
-  reset-timer-on-bid: false  # false = the clock just counts down; true = each bid puts it back to auction-seconds
+  bid-buttons: [5, 10, 25]   # the three bid items: raise the top bid by this much
+  bid-increment: 5           # what /bid (typed) raises it by
 
 # Minecraft server address shown on the website's Join panel. Change it in game with /smp setip <address>
 server-address: willymoneysmp.minefort.com
@@ -70,15 +68,19 @@ web-server:
   enabled: false
   port: 8085
 
-# King of the Hill event settings
-koth:
-  duration-seconds: 300   # 5 minutes
-  give-sword: true        # everyone on a team gets a Knockback II wooden sword when KOTH starts
-  sword-uses: 5           # roughly how many hits before the sword breaks
+# Capture Points (replaces airdrops). Save up to 8 with /cp set <name>, then /cp startday each day.
+capture-points:
+  reward: 75                 # credits to the capturing team's captain
+  radius: 6                  # zone size in blocks
+  control-seconds: 240       # phase 1: hold the majority for 4 minutes
+  capture-seconds: 480       # phase 2: keep holding for 8 more minutes
+  per-day: 5                 # points opened per day (picked at random from the saved ones)
+  max-active: 2              # how many can be open at the same time
+  steal-drain-speed: 2       # how fast another team drains your progress when they have the majority
 
 # Team Deathmatch (/ffa or /tdm)
 ffa:
   kill-bonus: 20              # every kill during the deathmatch pays this much extra
   bounty-bonus: 20            # killing someone from the glowing bounty tier pays this much more on top
   bounty-rotate-seconds: 240  # bounty tier changes every 4 minutes
-  bounty-order: [CAPTAIN, C, A, B]
+  bounty-order: [CAPTAIN, D, A, C, B]

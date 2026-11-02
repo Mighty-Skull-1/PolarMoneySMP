@@ -5,13 +5,18 @@ import me.moneysmp.managers.DraftManager;
 import me.moneysmp.managers.TeamManager;
 import me.moneysmp.managers.TierManager;
 import me.moneysmp.models.PlayerTier;
-import me.moneysmp.models.Team;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+/**
+ * /bid nominate <player>  - admin starts an auction (captains get bid items, admin gets SOLD/CANCEL items)
+ * /bid sold               - admin sells to the top bidder (same as the SOLD item)
+ * /bid cancel             - admin cancels
+ * /bid                    - captain backup: raises the top bid by the normal step
+ */
 public class BidCommand implements CommandExecutor {
     private final TeamManager teamManager;
     private final CreditManager creditManager;
@@ -27,117 +32,50 @@ public class BidCommand implements CommandExecutor {
 
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-        if (args.length >= 1 && args[0].equalsIgnoreCase("cancel")) {
+        String sub = args.length > 0 ? args[0].toLowerCase() : "";
+        if (sub.equals("cancel") || sub.equals("sold") || sub.equals("nominate")) {
             if (!sender.hasPermission("moneysmp.admin")) {
-                sender.sendMessage("§cOnly server admins can cancel nominations!");
-                return true;
-            }
-            if (!draftManager.isDraftActive()) {
-                sender.sendMessage("§cNo active draft auction is currently running!");
-                return true;
-            }
-            draftManager.cancelDraft();
-            sender.sendMessage("§aDraft auction has been cancelled.");
-            return true;
-        }
-
-        if (args.length >= 1 && args[0].equalsIgnoreCase("nominate")) {
-            if (!sender.hasPermission("moneysmp.admin")) {
-                sender.sendMessage("§cOnly server admins can start nominations!");
-                return true;
-            }
-
-            if (args.length < 2) {
-                sender.sendMessage("§cUsage: /bid nominate <player>");
-                return true;
-            }
-
-            Player target = Bukkit.getPlayer(args[1]);
-            if (target == null) {
-                sender.sendMessage("§cTarget player not found!");
-                return true;
-            }
-
-            if (teamManager.getTeamByPlayer(target.getUniqueId()) != null) {
-                sender.sendMessage("§c" + target.getName() + " is already a member of a team!");
-                return true;
-            }
-
-            PlayerTier tier = tierManager.getTier(target.getUniqueId());
-            if (tier == PlayerTier.NONE || tier == PlayerTier.CAPTAIN) {
-                sender.sendMessage("§cPlayer is not in a draftable tier (A, B, C)!");
-                return true;
-            }
-
-            if (!draftManager.startNomination(target)) {
-                sender.sendMessage("§cA draft auction is already running!");
-            }
-            return true;
-        }
-
-        if (!(sender instanceof Player captain)) {
-            sender.sendMessage("Only players can bid on nominated players.");
-            return true;
-        }
-
-        Team team = teamManager.getTeamByPlayer(captain.getUniqueId());
-        if (team == null || !team.isCaptain(captain.getUniqueId())) {
-            captain.sendMessage("§c[Willy Money SMP] Access Denied! Only S-Tier Team Captains can bid!");
-            return true;
-        }
-
-        if (!draftManager.isDraftActive()) {
-            captain.sendMessage("§cThere is no active draft auction running! An admin must use /bid nominate <player>");
-            return true;
-        }
-
-        // Bids go up in fixed steps (default +5): 5, 10, 15, 20...
-        // "/bid" places the next step. "/bid <amount>" is accepted only if it IS the next step.
-        int nextBid = draftManager.getNextBid();
-        int amount = nextBid;
-        if (args.length >= 1) {
-            try {
-                amount = Integer.parseInt(args[0]);
-            } catch (NumberFormatException e) {
-                captain.sendMessage("§cJust type §e/bid §cto bid §e" + nextBid + "§c.");
-                return true;
-            }
-            if (amount != nextBid) {
-                captain.sendMessage("§cBids go up §e" + draftManager.getBidIncrement() + " §cat a time. The next bid is §e"
-                        + nextBid + "§c - just type §e/bid§c.");
+                sender.sendMessage("§cOnly server admins can do that!");
                 return true;
             }
         }
-
-        if (draftManager.isHighestBidder(captain)) {
-            captain.sendMessage("§eYou're already the top bidder at " + draftManager.getHighestBid() + " credits!");
-            return true;
-        }
-
-        java.util.UUID nomineeUuid = draftManager.getCurrentNomineeUuid();
-        if (nomineeUuid == null) {
-            captain.sendMessage("§cNo player is currently nominated!");
-            return true;
-        }
-
-        PlayerTier nomineeTier = tierManager.getTier(nomineeUuid);
-        for (java.util.UUID memberId : team.getMembers()) {
-            if (tierManager.getTier(memberId) == nomineeTier) {
-                captain.sendMessage("§cYour team already has a player from Tier " + nomineeTier.name() + "!");
+        switch (sub) {
+            case "cancel" -> {
+                if (!draftManager.isDraftActive()) sender.sendMessage("§cNo auction is running.");
+                else draftManager.cancelDraft();
+                return true;
+            }
+            case "sold" -> {
+                if (!draftManager.isDraftActive()) sender.sendMessage("§cNo auction is running.");
+                else draftManager.sell();
+                return true;
+            }
+            case "nominate" -> {
+                if (args.length < 2) { sender.sendMessage("§cUsage: /bid nominate <player>"); return true; }
+                Player target = Bukkit.getPlayer(args[1]);
+                if (target == null) { sender.sendMessage("§cThat player isn't online!"); return true; }
+                if (teamManager.getTeamByPlayer(target.getUniqueId()) != null) {
+                    sender.sendMessage("§c" + target.getName() + " is already on a team!");
+                    return true;
+                }
+                PlayerTier tier = tierManager.getTier(target.getUniqueId());
+                if (tier == PlayerTier.NONE || tier == PlayerTier.CAPTAIN) {
+                    sender.sendMessage("§cThat player isn't in a draftable tier (A, B, C, D)! Use /tier set first.");
+                    return true;
+                }
+                if (!draftManager.startNomination(target, sender instanceof Player p ? p : null)) {
+                    sender.sendMessage("§cAn auction is already running! Sell or cancel it first.");
+                } else if (sender instanceof Player) {
+                    sender.sendMessage("§7You have the §aSOLD §7and §cCANCEL §7items in your hotbar (or use /bid sold).");
+                }
+                return true;
+            }
+            default -> {
+                if (!(sender instanceof Player captain)) { sender.sendMessage("Only players can bid."); return true; }
+                String err = draftManager.tryBid(captain, draftManager.getNextBid());
+                if (err != null) captain.sendMessage("§c[Draft] " + err);
                 return true;
             }
         }
-
-        int availableDraftCredits = creditManager.getDraftCredits(captain.getUniqueId());
-        if (availableDraftCredits < amount) {
-            captain.sendMessage("§cNot enough draft credits! Remaining Balance: " + availableDraftCredits);
-            return true;
-        }
-
-        if (!draftManager.placeBid(captain, amount)) {
-            captain.sendMessage("§cSomeone bid first! The next bid is now §e" + draftManager.getNextBid() + "§c - type §e/bid §cagain.");
-        }
-
-        return true;
     }
 }

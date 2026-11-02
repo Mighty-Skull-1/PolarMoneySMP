@@ -27,6 +27,7 @@ public class MoneySMP extends JavaPlugin {
     private DisplayManager displayManager;
     private EliminationManager eliminationManager;
     private me.moneysmp.managers.FfaManager ffaManager;
+    private me.moneysmp.managers.CapturePointManager capturePointManager;
     private DataManager dataManager;
     private BannedItemManager bannedItemManager;
     private SMPGuiManager smpGuiManager;
@@ -52,6 +53,7 @@ public class MoneySMP extends JavaPlugin {
         this.draftManager = new DraftManager(this, teamManager, creditManager, tierManager);
         this.eventManager = new EventManager(this, teamManager, creditManager);
         this.ffaManager = new me.moneysmp.managers.FfaManager(this, teamManager, creditManager);
+        this.capturePointManager = new me.moneysmp.managers.CapturePointManager(this, teamManager, creditManager);
         this.displayManager = new DisplayManager(this, teamManager, creditManager, tierManager, phaseManager);
         this.smpGuiManager = new SMPGuiManager(this, phaseManager, eventManager, teamManager, eliminationManager, dataManager, bannedItemManager);
         this.webServerManager = new me.moneysmp.web.WebServerManager(this, teamManager, creditManager, tierManager,
@@ -76,7 +78,6 @@ public class MoneySMP extends JavaPlugin {
         getCommand("bid").setTabCompleter(tabCompleter);
 
         getCommand("tc").setExecutor(new TeamChatCommand(teamManager));
-        getCommand("tracker").setExecutor(new TrackerCommand(teamManager));
 
         AnnounceCommand announceCommand = new AnnounceCommand();
         getCommand("announce").setExecutor(announceCommand);
@@ -84,11 +85,9 @@ public class MoneySMP extends JavaPlugin {
         getCommand("titleannounce").setExecutor(announceCommand);
         getCommand("titleannounce").setTabCompleter(tabCompleter);
 
-        getCommand("koth").setExecutor(new KothCommand(eventManager));
-        getCommand("koth").setTabCompleter(tabCompleter);
 
-        getCommand("airdrop").setExecutor(new AirdropCommand(eventManager));
-        getCommand("airdrop").setTabCompleter(tabCompleter);
+        getCommand("cp").setExecutor(new me.moneysmp.commands.CapturePointCommand(capturePointManager));
+        getCommand("cp").setTabCompleter(tabCompleter);
 
         getCommand("freefall").setExecutor(new FreeFallCommand(this, phaseManager, teamManager, creditManager));
         getCommand("freefall").setTabCompleter(tabCompleter);
@@ -114,6 +113,7 @@ public class MoneySMP extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new KillEventListener(
                 this, teamManager, creditManager, tierManager, phaseManager, eventManager, eliminationManager, smpGuiManager), this);
         getServer().getPluginManager().registerEvents(new BingoEventListener(this, eventManager), this);
+        getServer().getPluginManager().registerEvents(new me.moneysmp.listeners.DraftItemListener(this, draftManager), this);
         getServer().getPluginManager().registerEvents(new BannedItemListener(bannedItemManager), this);
 
         // --- Schedulers ---
@@ -136,9 +136,9 @@ public class MoneySMP extends JavaPlugin {
         }
         if (ffaManager != null) ffaManager.stop();
         if (eventManager != null) {
-            eventManager.stopKoth();
             eventManager.stopBingo(false);
         }
+        if (capturePointManager != null) capturePointManager.stopDay(false);
         if (draftManager != null) {
             draftManager.cancelDraft();
         }
@@ -150,6 +150,7 @@ public class MoneySMP extends JavaPlugin {
     public EliminationManager getEliminationManager() { return eliminationManager; }
     public me.moneysmp.managers.FfaManager getFfaManager() { return ffaManager; }
     public TierManager getTierManager() { return tierManager; }
+    public me.moneysmp.managers.CapturePointManager getCapturePointManager() { return capturePointManager; }
     public SMPGuiManager getSmpGuiManager() { return smpGuiManager; }
     public BannedItemManager getBannedItemManager() { return bannedItemManager; }
     public StatsManager getStatsManager() { return statsManager; }
@@ -160,9 +161,9 @@ public class MoneySMP extends JavaPlugin {
             draftManager.cancelDraft();
         }
         if (eventManager != null) {
-            eventManager.stopKoth();
             eventManager.stopBingo(false);
         }
+        if (capturePointManager != null) capturePointManager.stopDay(false);
 
         // 2. Reset player gamemodes, health, hunger, inventories, and teleport to world spawn
         for (Player player : Bukkit.getOnlinePlayers()) {
@@ -290,6 +291,30 @@ public class MoneySMP extends JavaPlugin {
             saveConfig();
             getLogger().info("Updated config.yml: KOTH is 5 minutes, pays 125/100/75/50/25, and gives Knockback II swords.");
         }
+        if (getConfig().getInt("config-version", 1) < 7) {
+            // Season 2: S/A/B/C/D kill rewards, 4 teams, capture points, no draft timer, new bounty order.
+            getConfig().set("rewards.captain-kill", 30);
+            getConfig().set("rewards.tier-a-kill", 25);
+            getConfig().set("rewards.tier-b-kill", 20);
+            getConfig().set("rewards.tier-c-kill", 15);
+            getConfig().set("rewards.tier-d-kill", 10);
+            getConfig().set("max-teams", 4);
+            getConfig().set("draft.bid-buttons", java.util.List.of(5, 10, 25));
+            getConfig().set("draft.auction-seconds", null);
+            getConfig().set("draft.reset-timer-on-bid", null);
+            getConfig().set("ffa.bounty-order", java.util.List.of("CAPTAIN", "D", "A", "C", "B"));
+            getConfig().set("rewards.koth", null);
+            getConfig().set("koth", null);
+            if (!getConfig().isSet("capture-points.reward")) {
+                getConfig().set("capture-points.reward", 75);
+                getConfig().set("capture-points.radius", 6);
+                getConfig().set("capture-points.control-seconds", 240);
+                getConfig().set("capture-points.capture-seconds", 480);
+                getConfig().set("capture-points.per-day", 5);
+                getConfig().set("capture-points.max-active", 2);
+                getConfig().set("capture-points.steal-drain-speed", 2);
+            }
+        }
         if (getConfig().getInt("config-version", 1) < 6) {
             if (!getConfig().isSet("ffa.kill-bonus")) getConfig().set("ffa.kill-bonus", 20);
             if (!getConfig().isSet("ffa.bounty-bonus")) getConfig().set("ffa.bounty-bonus", 20);
@@ -312,6 +337,11 @@ public class MoneySMP extends JavaPlugin {
             getConfig().set("config-version", 6);
             saveConfig();
             getLogger().info("Updated config.yml: Team Deathmatch kill bonus +20, bounty tier +20 rotating every 4 minutes.");
+        }
+        if (getConfig().getInt("config-version", 1) < 7) {
+            getConfig().set("config-version", 7);
+            saveConfig();
+            getLogger().info("Updated config.yml for Season 2: S/A/B/C/D kill rewards 30/25/20/15/10, 4 teams, capture points, no draft timer.");
         }
     }
 

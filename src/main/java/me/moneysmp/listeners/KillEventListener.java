@@ -37,7 +37,6 @@ public class KillEventListener implements Listener {
     private final EliminationManager eliminationManager;
     private final SMPGuiManager smpGuiManager;
 
-    private final Map<UUID, Boolean> trackerModes = new HashMap<>();
 
     public KillEventListener(JavaPlugin plugin, TeamManager teamManager, CreditManager creditManager,
                              TierManager tierManager, PhaseManager phaseManager, EventManager eventManager,
@@ -122,16 +121,18 @@ public class KillEventListener implements Listener {
         }
 
         PlayerTier victimTier = tierManager.getTier(victim.getUniqueId());
-        int rewardPoints = 5;
+        int rewardPoints = 10;
 
         if (victimTeam.isCaptain(victim.getUniqueId()) || victimTier == PlayerTier.CAPTAIN) {
-            rewardPoints = plugin != null ? plugin.getConfig().getInt("rewards.captain-kill", 25) : 25;
+            rewardPoints = plugin != null ? plugin.getConfig().getInt("rewards.captain-kill", 30) : 30;
         } else if (victimTier == PlayerTier.A) {
-            rewardPoints = plugin != null ? plugin.getConfig().getInt("rewards.tier-a-kill", 15) : 15;
+            rewardPoints = plugin != null ? plugin.getConfig().getInt("rewards.tier-a-kill", 25) : 25;
         } else if (victimTier == PlayerTier.B) {
-            rewardPoints = plugin != null ? plugin.getConfig().getInt("rewards.tier-b-kill", 10) : 10;
+            rewardPoints = plugin != null ? plugin.getConfig().getInt("rewards.tier-b-kill", 20) : 20;
         } else if (victimTier == PlayerTier.C) {
-            rewardPoints = plugin != null ? plugin.getConfig().getInt("rewards.tier-c-kill", 10) : 10;
+            rewardPoints = plugin != null ? plugin.getConfig().getInt("rewards.tier-c-kill", 15) : 15;
+        } else if (victimTier == PlayerTier.D) {
+            rewardPoints = plugin != null ? plugin.getConfig().getInt("rewards.tier-d-kill", 10) : 10;
         }
 
         rewardPoints += tdmExtra; // Team Deathmatch: +20 per kill, +20 more on the glowing bounty tier
@@ -201,95 +202,6 @@ public class KillEventListener implements Listener {
         String title = event.getView().getTitle();
         if (title.contains("Bingo") || title.equals(SMPGuiManager.GUI_TITLE) || title.equals(BannedItemManager.GUI_TITLE)) {
             event.setCancelled(true);
-        }
-    }
-
-    @EventHandler
-    public void onAirdropInteract(PlayerInteractEvent event) {
-        if (event.getAction() != Action.RIGHT_CLICK_BLOCK || event.getClickedBlock() == null) return;
-        if (event.getClickedBlock().getType() != Material.CHEST) return;
-
-        if (eventManager != null) {
-            EventManager.AirdropData data = eventManager.claimAirdrop(event.getClickedBlock().getLocation());
-            if (data != null) {
-                Player player = event.getPlayer();
-                if (data.getCreditsReward() > 0) {
-                    creditManager.addGameCredits(player.getUniqueId(), data.getCreditsReward());
-                    Bukkit.broadcastMessage("§6[AIRDROP] §e" + player.getName() + " opened the " + data.getTitle() + " §eand earned §a+" + data.getCreditsReward() + " Game Credits§e!");
-                } else {
-                    Bukkit.broadcastMessage("§6[AIRDROP] §e" + player.getName() + " opened the " + data.getTitle() + "§e!");
-                }
-                player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1.0f, 1.2f);
-            }
-        }
-    }
-
-    @EventHandler
-    public void onRadarInteract(PlayerInteractEvent event) {
-        if (event.getHand() != EquipmentSlot.HAND) return;
-
-        Player player = event.getPlayer();
-        ItemStack item = event.getItem();
-
-        if (item == null || item.getType() != Material.COMPASS) return;
-        if (!item.hasItemMeta() || !item.getItemMeta().hasDisplayName()) return;
-        if (!item.getItemMeta().getDisplayName().contains("Team Tracker")) return;
-
-        if (event.getAction() == Action.RIGHT_CLICK_AIR || event.getAction() == Action.RIGHT_CLICK_BLOCK) {
-            Team playerTeam = teamManager.getTeamByPlayer(player.getUniqueId());
-            if (playerTeam == null) {
-                player.sendMessage("§cYou must be on a team to use the Team Tracker!");
-                return;
-            }
-
-            // Only captains can track enemy captains. Tier A/B/C players always track their teammates.
-            boolean mode = true; // true = nearest teammate, false = nearest enemy captain
-            if (playerTeam.isCaptain(player.getUniqueId())) {
-                mode = !trackerModes.getOrDefault(player.getUniqueId(), true);
-                trackerModes.put(player.getUniqueId(), mode);
-            }
-
-            Player target = null;
-            double closestDistance = Double.MAX_VALUE;
-
-            if (mode) {
-                for (UUID memberUuid : playerTeam.getMembers()) {
-                    if (memberUuid.equals(player.getUniqueId())) continue;
-                    Player member = player.getServer().getPlayer(memberUuid);
-                    if (member != null && member.getWorld().equals(player.getWorld())) {
-                        double dist = player.getLocation().distance(member.getLocation());
-                        if (dist < closestDistance) {
-                            closestDistance = dist;
-                            target = member;
-                        }
-                    }
-                }
-                if (target != null) {
-                    player.setCompassTarget(target.getLocation());
-                    player.sendMessage("§a[Tracker] Compass pointing to nearest Teammate: §e" + target.getName() + " §7(" + (int) closestDistance + "m)");
-                } else {
-                    player.sendMessage("§c[Tracker] No online teammates found nearby in this dimension.");
-                }
-            } else {
-                for (Player online : player.getServer().getOnlinePlayers()) {
-                    Team targetTeam = teamManager.getTeamByPlayer(online.getUniqueId());
-                    if (targetTeam != null && !targetTeam.equals(playerTeam) && targetTeam.isCaptain(online.getUniqueId())) {
-                        if (online.getWorld().equals(player.getWorld())) {
-                            double dist = player.getLocation().distance(online.getLocation());
-                            if (dist < closestDistance) {
-                                closestDistance = dist;
-                                target = online;
-                            }
-                        }
-                    }
-                }
-                if (target != null) {
-                    player.setCompassTarget(target.getLocation());
-                    player.sendMessage("§c[Tracker] Compass pointing to Enemy Captain: §e" + target.getName() + " §7(" + (int) closestDistance + "m)");
-                } else {
-                    player.sendMessage("§c[Tracker] No online enemy captains found nearby.");
-                }
-            }
         }
     }
 }

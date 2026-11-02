@@ -348,7 +348,7 @@ public class WebServerManager {
         if (!address.isEmpty()) sb.append("\"ip\":").append(str(address)).append(",");
         sb.append("\"on\":").append(Bukkit.getOnlinePlayers().size()).append(",");
         sb.append("\"max\":").append(Bukkit.getMaxPlayers()).append(",");
-        sb.append("\"k\":").append(eventManager != null && eventManager.isKothActive() ? 1 : 0).append(",");
+        sb.append("\"k\":").append(captureActive() ? 1 : 0).append(",");
         sb.append("\"b\":").append(eventManager != null && eventManager.isBingoActive() ? 1 : 0).append(",");
 
         // Teams
@@ -391,7 +391,7 @@ public class WebServerManager {
         List<Map.Entry<UUID, PlayerTier>> pool = new ArrayList<>();
         for (Map.Entry<UUID, PlayerTier> e : tierManager.getAllTiers().entrySet()) {
             PlayerTier t = e.getValue();
-            if ((t == PlayerTier.A || t == PlayerTier.B || t == PlayerTier.C)
+            if ((t == PlayerTier.A || t == PlayerTier.B || t == PlayerTier.C || t == PlayerTier.D)
                     && teamManager.getTeamByPlayer(e.getKey()) == null) {
                 pool.add(e);
             }
@@ -456,7 +456,7 @@ public class WebServerManager {
     private String buildStatusJson() {
         return "{\"phase\":\"" + phaseManager.getCurrentPhase().name() + "\"," +
                 "\"onlinePlayers\":" + Bukkit.getOnlinePlayers().size() + "," +
-                "\"kothActive\":" + (eventManager != null && eventManager.isKothActive()) + "," +
+                "\"kothActive\":" + captureActive() + "," +
                 "\"bingoActive\":" + (eventManager != null && eventManager.isBingoActive()) + "," +
                 "\"draftActive\":" + (draftManager != null && draftManager.isDraftActive()) + "}";
     }
@@ -467,13 +467,19 @@ public class WebServerManager {
         return total;
     }
 
+    /** Season 2: the old KOTH flag now means "capture points are open". */
+    private boolean captureActive() {
+        return plugin instanceof me.moneysmp.MoneySMP smp && smp.getCapturePointManager() != null && smp.getCapturePointManager().isRunning();
+    }
+
     private static int tierRank(PlayerTier tier) {
         switch (tier) {
             case CAPTAIN: return 0;
             case A: return 1;
             case B: return 2;
             case C: return 3;
-            default: return 4;
+            case D: return 4;
+            default: return 5;
         }
     }
 

@@ -50,10 +50,7 @@ public class SMPCommand implements CommandExecutor {
             if (plugin != null) {
                 plugin.reloadConfig();
             }
-            if (eventManager != null) {
-                eventManager.loadAirdropConfig();
-            }
-            sender.sendMessage("§a[Willy Money SMP] Configuration and airdrops reloaded successfully!");
+            sender.sendMessage("§a[Willy Money SMP] Configuration reloaded successfully!");
             return true;
         }
 

@@ -51,15 +51,12 @@ public class MoneySMPTabCompleter implements TabCompleter {
             if (args.length == 1) {
                 candidates.addAll(Arrays.asList("start", "stop"));
             }
-        } else if (command.getName().equalsIgnoreCase("airdrop")) {
+        } else if (command.getName().equalsIgnoreCase("cp")) {
             if (args.length == 1) {
-                candidates.addAll(Arrays.asList("common", "rare", "legendary", "random"));
-            } else if (args.length == 2 && args[0].equalsIgnoreCase("random")) {
-                candidates.addAll(Arrays.asList("common", "rare", "legendary"));
-            }
-        } else if (command.getName().equalsIgnoreCase("koth")) {
-            if (args.length == 1) {
-                candidates.addAll(Arrays.asList("start", "stop"));
+                candidates.addAll(Arrays.asList("set", "startday", "list", "open", "stopday", "remove"));
+            } else if (args.length == 2 && (args[0].equalsIgnoreCase("open") || args[0].equalsIgnoreCase("remove") || args[0].equalsIgnoreCase("set"))
+                    && org.bukkit.Bukkit.getPluginManager().getPlugin("WillyMoneySMP") instanceof me.moneysmp.MoneySMP smp && smp.getCapturePointManager() != null) {
+                candidates.addAll(smp.getCapturePointManager().pointNames());
             }
         } else if (command.getName().equalsIgnoreCase("ffa")) {
             if (args.length == 1) {
@@ -79,6 +76,7 @@ public class MoneySMPTabCompleter implements TabCompleter {
             if (args.length == 1) {
                 if (sender.hasPermission("moneysmp.admin")) {
                     candidates.add("nominate");
+                    candidates.add("sold");
                     candidates.add("cancel");
                 }
                 if (draftManager != null && draftManager.isDraftActive()) {
@@ -87,7 +85,7 @@ public class MoneySMPTabCompleter implements TabCompleter {
             } else if (args.length == 2 && args[0].equalsIgnoreCase("nominate") && sender.hasPermission("moneysmp.admin")) {
                 for (Player player : Bukkit.getOnlinePlayers()) {
                     PlayerTier tier = tierManager.getTier(player.getUniqueId());
-                    if (tier == PlayerTier.A || tier == PlayerTier.B || tier == PlayerTier.C) {
+                    if (tier == PlayerTier.A || tier == PlayerTier.B || tier == PlayerTier.C || tier == PlayerTier.D) {
                         if (teamManager.getTeamByPlayer(player.getUniqueId()) == null) {
                             candidates.add(player.getName());
                         }
@@ -102,7 +100,7 @@ public class MoneySMPTabCompleter implements TabCompleter {
                     candidates.add(player.getName());
                 }
             } else if (args.length == 3 && args[0].equalsIgnoreCase("set")) {
-                candidates.addAll(Arrays.asList("A", "B", "C"));
+                candidates.addAll(Arrays.asList("A", "B", "C", "D"));
             }
         } else if (command.getName().equalsIgnoreCase("team")) {
             if (args.length == 1) {

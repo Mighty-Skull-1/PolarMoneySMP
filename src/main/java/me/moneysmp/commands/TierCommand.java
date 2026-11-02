@@ -23,13 +23,13 @@ public class TierCommand implements CommandExecutor {
         }
 
         if (args.length < 2) {
-            sender.sendMessage("§cUsage:\n/tier set <player> <A|B|C>\n/tier remove <player>");
+            sender.sendMessage("§cUsage:\n/tier set <player> <A|B|C|D>\n/tier remove <player>");
             return true;
         }
 
         if (args[0].equalsIgnoreCase("set")) {
             if (args.length < 3) {
-                sender.sendMessage("§cUsage: /tier set <player> <A|B|C>");
+                sender.sendMessage("§cUsage: /tier set <player> <A|B|C|D>  (captains are S tier automatically)");
                 return true;
             }
             Player target = Bukkit.getPlayer(args[1]);
@@ -40,10 +40,11 @@ public class TierCommand implements CommandExecutor {
 
             try {
                 PlayerTier tier = PlayerTier.valueOf(args[2].toUpperCase());
+                if (tier == PlayerTier.NONE || tier == PlayerTier.CAPTAIN) throw new IllegalArgumentException();
                 tierManager.setTier(target.getUniqueId(), tier);
                 sender.sendMessage("§aAssigned " + target.getName() + " to Tier " + tier.name());
             } catch (IllegalArgumentException e) {
-                sender.sendMessage("§cInvalid Tier! Use A, B, or C.");
+                sender.sendMessage("§cInvalid Tier! Use A, B, C or D. (S tier = captains, set by /team create)");
             }
         } else if (args[0].equalsIgnoreCase("remove")) {
             Player target = Bukkit.getPlayer(args[1]);

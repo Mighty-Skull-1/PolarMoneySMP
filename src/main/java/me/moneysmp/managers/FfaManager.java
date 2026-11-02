@@ -313,7 +313,7 @@ public class FfaManager {
         for (String name : plugin.getConfig().getStringList("ffa.bounty-order")) {
             try { order.add(PlayerTier.valueOf(name.trim().toUpperCase())); } catch (IllegalArgumentException ignored) { }
         }
-        if (order.isEmpty()) order = List.of(PlayerTier.CAPTAIN, PlayerTier.C, PlayerTier.A, PlayerTier.B);
+        if (order.isEmpty()) order = List.of(PlayerTier.CAPTAIN, PlayerTier.D, PlayerTier.A, PlayerTier.C, PlayerTier.B);
         return order;
     }
 
@@ -332,7 +332,7 @@ public class FfaManager {
     }
 
     private static String tierName(PlayerTier t) {
-        return t == PlayerTier.CAPTAIN ? "CAPTAINS" : "TIER " + t.name();
+        return t == PlayerTier.CAPTAIN ? "S-TIER CAPTAINS" : "TIER " + t.name();
     }
 
     /** True for players still standing in the deathmatch whose tier is the current bounty - they glow. */

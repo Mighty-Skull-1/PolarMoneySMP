@@ -4,6 +4,13 @@ Welcome to **Willy Money SMP**, a high-stakes, economy-driven Minecraft tourname
 
 ---
 
+## ❄️ Season 2 changes (Polar Money SMP)
+- KOTH removed, airdrops replaced by **Capture Points** (`/cp`), trackers removed.
+- **4 teams** (`max-teams` in config.yml).
+- Tiers **S (captains) / A / B / C / D**: kill rewards 30 / 25 / 20 / 15 / 10.
+- **Draft**: no timer. Captains right-click bid items in their hotbar (+5 / +10 / +25); the admin who nominated right-clicks **SOLD** (or `/bid sold`).
+- **Bingo**: `/bingo` is locked until the event starts, then the board opens for everyone at once.
+
 ## 📌 Table of Contents
 1. [Tournament Overview](#-tournament-overview)
 2. [The Two Currencies](#-the-two-currencies)
@@ -12,7 +19,6 @@ Welcome to **Willy Money SMP**, a high-stakes, economy-driven Minecraft tourname
 5. [Teams, Elimination & Buyback](#-teams-elimination--buyback)
 6. [Banned Items & Movement Rules](#-banned-items--movement-rules)
 7. [Live Tournament Events](#-live-tournament-events)
-8. [Team Tracker Compass](#-team-tracker-compass)
 9. [Admin Control Panel & System Reset](#-admin-control-panel--system-reset)
 10. [Complete Commands Reference](#-complete-commands-reference)
 
@@ -32,7 +38,7 @@ In **Willy Money SMP**, players compete in teams led by designated Captains. The
 | Currency | Purpose | How to Earn / Obtain |
 | :--- | :--- | :--- |
 | **Draft Credits** | Used **strictly by Team Captains** during the Draft Phase auction to bid on players. | Set at the start (`300` default) or granted by Admins via `/credits give <player> <amt> draft`. |
-| **Game Credits** | Used to rank teams on the leaderboard (`/leaderboard`). | Earned from **Player Kills**, winning **King of the Hill (KOTH)**, opening **Airdrops**, and placing in **Bingo**. |
+| **Game Credits** | Used to rank teams on the leaderboard (`/leaderboard`). | Earned from **Player Kills**, capturing **Capture Points**, and placing in **Bingo**. |
 
 ---
 
@@ -132,25 +138,17 @@ To ensure competitive tournament balance and eliminate instant-escape teleportat
 
 ## 🎯 Live Tournament Events
 
-### 1. King of the Hill (KOTH)
-- **Start**: `/koth start` (or click Beacon in `/smp` GUI).
-- **Duration**: 5 minutes (`koth.duration-seconds` in config.yml).
-- **KOTH Sword**: every team player gets a Knockback II wooden sword that breaks after about 5 hits.
-- **Mechanism**: A 5-block particle flame ring spawns with a floating holographic countdown timer.
-- **Capturing**: Teams standing inside the ring capture the hill. If multiple teams are inside, it becomes `CONTESTED`.
-- **Rewards** (most seconds holding the hill): **1st `+125`**, **2nd `+100`**, **3rd `+75`**, **4th `+50`**, **5th `+25` Game Credits**, paid to each team's Captain.
+### Capture Points (Season 2 - replaces KOTH and airdrops)
+- **Set up**: stand on each spot and run `/cp set <name>` (8 points around the map).
+- **Each day**: `/cp startday` (or the banner in `/smp`) picks 5 of the 8 at random. Only 2 are open at once; when one is captured the next opens.
+- **Majority rule**: the team with the most players inside the zone (radius 6) makes progress. A tie for most = contested (frozen). Extra players don't speed it up.
+- **Two phases**: hold it for 4 minutes (control), then 8 more minutes (capture). A boss bar shows who's holding each point and the time left.
+- **Stealing**: if another team gets the majority, the old team's progress drains (2x speed), then the new team starts from zero.
+- **Reward**: +75 credits to the capturing team's captain. `/cp list`, `/cp open <name>`, `/cp stopday`, `/cp remove <name>`.
 
-### 2. Proximity Airdrops
-- **Summon**: Click Airdrop chest in `/smp` GUI or `/airdrop random <tier>`.
-- **Landing**: Drops 50–130 blocks away from an active player. Descends from the sky and leaves a smoke flare signal upon landing.
-- **Chests & Loot Pools**:
-  - **Common Airdrop**: Random survival gear (iron, bread, arrows, golden apples, shields) + filler loot (**0 Game Credits** / Loot only).
-  - **Rare Airdrop**: Diamonds, golden apples, obsidian, bows, enchanted books + **`+5 Game Credits`**.
-  - **Legendary Airdrop**: Totem of Undying, netherite scraps, enchanted apples, diamonds + **`+15 Game Credits`**.
-
-### 3. Lockout Bingo (5x5 Board)
+### Lockout Bingo (5x5 Board)
 - **Start**: `/bingo start` (or click Map in `/smp` GUI).
-- **View Board**: `/bingo` opens the centered 54-slot GUI.
+- **View Board**: opens for everyone automatically when bingo starts; `/bingo` reopens it (locked before the event).
 - **Visual Alignment & Theme**:
   - The 5x5 grid is centered on Columns 2–6 (slots 11–15, 20–24, 29–33, 38–42, 47–51).
   - Symmetrical dark glass border framing (`BLACK_STAINED_GLASS_PANE` & `GRAY_STAINED_GLASS_PANE`).
@@ -169,15 +167,6 @@ To ensure competitive tournament balance and eliminate instant-escape teleportat
 
 ---
 
-## 🧭 Team Tracker Compass (`/tracker`)
-
-- **Tier A, B & C players**: Right-click to point the compass at your nearest teammate.
-- **Captains only**: Right-click to switch between your nearest teammate and the nearest **enemy Captain**.
-
-**Team colours**: Every player's name above their head is shown in their team's colour (e.g. TeamBlue = blue), so you can tell teams apart at a glance. The colour comes from the team name: red, blue, green, yellow, purple, gold/orange or aqua/cyan.
-
----
-
 ## 🛠️ Admin Control Panel & System Reset
 
 Type **`/smp`** to open the interactive Admin Control Panel:
@@ -192,10 +181,7 @@ Type **`/smp`** to open the interactive Admin Control Panel:
   Slot 16: [Nether Star]      Tournament Live Stats Overview
 
 [Row 2 - Events & System Controls]
-  Slot 18: [Beacon]           KOTH Toggle (Left: Start, Right: Stop)
-  Slot 19: [Chest]            Summon Common Airdrop
-  Slot 20: [Ender Chest]      Summon Rare Airdrop
-  Slot 21: [Trapped Chest]    Summon Legendary Airdrop
+  Slot 18: [White Banner]     Capture Points (Left: start today, Right: close all)
   Slot 22: [Filled Map]       Lockout Bingo Toggle
   Slot 23: [Ender Eye]        Save Tournament Data to data.yml
   Slot 24: [Redstone Torch]   Reload Configurations
@@ -230,7 +216,6 @@ After running tests, you can completely reset everything to the beginning:
 | `/team list` | — | View all active teams and rosters. |
 | `/team info [team]` | — | Inspect a team's members, captain, and elimination status. |
 | `/tc <message>` | `/teamchat` | Send a private message to your teammates. |
-| `/tracker` | — | Receive a Team Tracker compass. |
 | `/bingo` | — | Open the interactive centered 5x5 Lockout Bingo GUI. |
 | `/leaderboard` | `/top` | View top teams ranked by credit balances. |
 | `/website` | `/site`, `/web` | Clickable link to the live standings website. |
@@ -241,7 +226,7 @@ After running tests, you can completely reset everything to the beginning:
 | `/smp` | — | Open the Admin Control Panel GUI. |
 | `/smp phase <draft\|grace\|pvp\|finale>` | — | Switch the active tournament phase. |
 | `/smp reset confirm` | — | Perform a complete tournament wipe & reset. |
-| `/smp reload` | — | Reload configuration files and airdrop tables. |
+| `/smp reload` | — | Reload config.yml. |
 | `/smp save` | — | Force an immediate write of all data to `data.yml`. |
 | `/banneditems add <material> [reason]` | — | Ban an item material from the tournament. |
 | `/banneditems remove <material>` | `/banneditems unban` | Remove an item from the ban list. |
@@ -252,18 +237,17 @@ After running tests, you can completely reset everything to the beginning:
 | `/team create <name> <captain>` | — | Create a team with a captain. |
 | `/team remove <player>` | — | Remove a player from their team. |
 | `/team disband <team>` | — | Disband an entire team. |
-| `/bid nominate <player>` | — | Put a player up for a 30s draft auction. |
+| `/bid nominate <player>` | — | Put a player up for auction (captains get bid items, you get SOLD/CANCEL). |
 | `/bid cancel` | — | Cancel the active auction. |
+| `/bid sold` | — | Sell the player to the top bidder (same as the SOLD item). |
+| `/cp startday` | — | Open today's capture points (also `set`, `list`, `open`, `stopday`, `remove`). |
 | `/credits give <player> <amt> [game\|draft]` | — | Give credits to a player. |
 | `/credits take <player> <amt> [game\|draft]` | — | Deduct credits from a player. |
 | `/credits set <player> <amt> [game\|draft]` | — | Set a player's credit balance. |
 | `/credits balance <player>` | — | Check credit balances of a player. |
 | `/team sub <old> <new>` | — | Sub a player out (works while they're offline). The new player gets their team, tier, credits, kills and deaths (and captain + purse if they were captain). Saves instantly. |
-| `/koth start` / `/koth stop` | — | Start or stop King of the Hill at your position. |
 | `/ffa start` | — | Team Deathmatch: last team standing wins, bounty tier glows (also `status`, `out <player>`, `end`, `stop`). |
 | `/freefall start [minutes] [size]` | — | Finale: shrink the world border (also `center`, `status`, `stop`, `end`, `reset`). |
-| `/airdrop <common\|rare\|legendary>` | — | Spawn an airdrop at your position. |
-| `/airdrop random <tier>` | — | Spawn an airdrop 50–130m near an active player. |
 | `/bingo start` / `/bingo stop` | — | Start or stop the Lockout Bingo event. |
 | `/announce <message>` | `/broadcast`, `/alert` | Global server announcement with sound. |
 | `/titleannounce <title>` | — | Fullscreen screen title alert for all players. |

@@ -149,6 +149,12 @@ public class TeamCommand implements CommandExecutor {
                 return true;
             }
 
+            int maxTeams = plugin != null ? plugin.getConfig().getInt("max-teams", 4) : 4;
+            if (teamManager.getTeams().size() >= maxTeams) {
+                sender.sendMessage("§cThere are already " + maxTeams + " teams (max-teams in config.yml).");
+                return true;
+            }
+
             Player captain = Bukkit.getPlayer(args[2]);
             if (captain == null) {
                 sender.sendMessage("§cCaptain player not found!");

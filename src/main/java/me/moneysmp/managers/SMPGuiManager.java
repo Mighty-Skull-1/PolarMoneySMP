@@ -97,7 +97,7 @@ public class SMPGuiManager {
         inv.setItem(14, createItem(Material.BARRIER, "§c§lBanned Items List", bannedLore, true));
 
         // Slot 16: Tournament Stats / Overview
-        boolean kothOn = eventManager != null && eventManager.isKothActive();
+        boolean kothOn = plugin instanceof me.moneysmp.MoneySMP smpCp && smpCp.getCapturePointManager() != null && smpCp.getCapturePointManager().isRunning();
         boolean bingoOn = eventManager != null && eventManager.isBingoActive();
         int teamCount = teamManager != null ? teamManager.getTeams().size() : 0;
         int elimCount = eliminationManager != null ? eliminationManager.getEliminatedPlayers().size() : 0;
@@ -108,56 +108,24 @@ public class SMPGuiManager {
                 "§7Total Teams: §e" + teamCount,
                 "§7Online Players: §a" + Bukkit.getOnlinePlayers().size(),
                 "§7Eliminated Players: §c" + elimCount,
-                "§7KOTH Event: " + (kothOn ? "§aActive" : "§7Idle"),
+                "§7Capture Points: " + (kothOn ? "§aOpen" : "§7Closed"),
                 "§7Bingo Event: " + (bingoOn ? "§aActive" : "§7Idle"),
                 "§8-------------------------",
                 "§eClick to refresh overview"
         );
         inv.setItem(16, createItem(Material.NETHER_STAR, "§6§lTournament Status", statsLore, true));
 
-        // Slot 18: King of the Hill (KOTH)
-        List<String> kothLore = Arrays.asList(
+        // Slot 18: Capture Points (Season 2 - replaces KOTH and airdrops)
+        List<String> cpLore = Arrays.asList(
                 "§8-------------------------",
-                "§7Status: " + (kothOn ? "§aActive (Running)" : "§cInactive"),
-                "§7Spawns particle zone & timer at target location.",
+                "§7Status: " + (kothOn ? "§aPoints open" : "§cClosed"),
+                "§7Opens 5 random saved points, 2 at a time.",
+                "§7Save points with §e/cp set <name>",
                 "§8-------------------------",
-                "§e▶ Left-Click: §aStart KOTH at your position",
-                "§c▶ Right-Click: §cStop active KOTH"
+                "§e▶ Left-Click: §aStart today's capture points",
+                "§c▶ Right-Click: §cClose all points"
         );
-        inv.setItem(18, createItem(Material.BEACON, "§b§lKing of the Hill", kothLore, kothOn));
-
-        // Slot 19: Summon Common Airdrop
-        List<String> commonDropLore = Arrays.asList(
-                "§8-------------------------",
-                "§7Spawns a Common supply drop near an active",
-                "§7player with randomized survival & filler loot.",
-                "§7Reward: §e0 Game Credits §7(Loot only)",
-                "§8-------------------------",
-                "§f▶ Click: §aSpawn Common Airdrop"
-        );
-        inv.setItem(19, createItem(Material.CHEST, "§f§lCommon Airdrop", commonDropLore, false));
-
-        // Slot 20: Summon Rare Airdrop
-        List<String> rareDropLore = Arrays.asList(
-                "§8-------------------------",
-                "§7Spawns a Rare supply drop near an active",
-                "§7player with diamonds, gapples & obsidian.",
-                "§7Reward: §a+5 Game Credits",
-                "§8-------------------------",
-                "§9▶ Click: §aSpawn Rare Airdrop"
-        );
-        inv.setItem(20, createItem(Material.ENDER_CHEST, "§9§lRare Airdrop", rareDropLore, false));
-
-        // Slot 21: Summon Legendary Airdrop
-        List<String> legDropLore = Arrays.asList(
-                "§8-------------------------",
-                "§7Spawns a Legendary drop near an active",
-                "§7player with totems, scraps & god apples.",
-                "§7Reward: §a+15 Game Credits",
-                "§8-------------------------",
-                "§6▶ Click: §aSpawn Legendary Airdrop"
-        );
-        inv.setItem(21, createItem(Material.TRAPPED_CHEST, "§6§lLegendary Airdrop", legDropLore, true));
+        inv.setItem(18, createItem(Material.WHITE_BANNER, "§b§lCapture Points", cpLore, kothOn));
 
         // Slot 22: Lockout Bingo
         List<String> bingoLore = Arrays.asList(
@@ -183,7 +151,7 @@ public class SMPGuiManager {
         // Slot 24: Reload Configuration
         List<String> reloadLore = Arrays.asList(
                 "§8-------------------------",
-                "§7Reloads config.yml and airdrops.yml",
+                "§7Reloads config.yml",
                 "§7without restarting the server.",
                 "§8-------------------------",
                 "§e▶ Click to reload configs"
@@ -198,7 +166,7 @@ public class SMPGuiManager {
                 "§7• Clears eliminations & revives spectators",
                 "§7• Resets draft & game credits to starting values",
                 "§7• Disbands all teams & clears player tiers",
-                "§7• Stops KOTH, Bingo & Draft events",
+                "§7• Stops Capture Points, Bingo & Draft events",
                 "§7• Wipes and creates fresh data.yml",
                 "§8-------------------------",
                 "§c▶ Shift + Click: §4§lCONFIRM FULL RESET",
@@ -286,45 +254,16 @@ public class SMPGuiManager {
                 openControlPanel(player);
                 break;
 
-            case 18: // KOTH
-                if (eventManager != null) {
+            case 18: // Capture Points
+                if (plugin instanceof me.moneysmp.MoneySMP smpCp && smpCp.getCapturePointManager() != null) {
                     if (clickType.isRightClick()) {
-                        if (eventManager.isKothActive()) {
-                            eventManager.stopKoth();
-                            player.sendMessage("§c[KOTH] Stopped King of the Hill!");
-                        } else {
-                            player.sendMessage("§c[KOTH] King of the Hill is not running!");
-                        }
+                        smpCp.getCapturePointManager().stopDay(true);
                     } else {
-                        eventManager.startKoth(player.getLocation());
-                        player.sendMessage("§a[KOTH] Started King of the Hill at your position!");
+                        String err = smpCp.getCapturePointManager().startDay();
+                        if (err != null) player.sendMessage("§c" + err);
                     }
                     player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 1.0f, 1.2f);
                     openControlPanel(player);
-                }
-                break;
-
-            case 19: // Common Airdrop
-                if (eventManager != null) {
-                    eventManager.spawnRandomAirdrop(player.getWorld(), "common");
-                    player.sendMessage("§f[AIRDROP] Summoned Common proximity airdrop!");
-                    player.playSound(player.getLocation(), Sound.ENTITY_CHICKEN_EGG, 1.0f, 1.2f);
-                }
-                break;
-
-            case 20: // Rare Airdrop
-                if (eventManager != null) {
-                    eventManager.spawnRandomAirdrop(player.getWorld(), "rare");
-                    player.sendMessage("§9[AIRDROP] Summoned Rare proximity airdrop!");
-                    player.playSound(player.getLocation(), Sound.ENTITY_CHICKEN_EGG, 1.0f, 1.2f);
-                }
-                break;
-
-            case 21: // Legendary Airdrop
-                if (eventManager != null) {
-                    eventManager.spawnRandomAirdrop(player.getWorld(), "legendary");
-                    player.sendMessage("§6[AIRDROP] Summoned Legendary proximity airdrop!");
-                    player.playSound(player.getLocation(), Sound.ENTITY_CHICKEN_EGG, 1.0f, 1.2f);
                 }
                 break;
 
@@ -358,10 +297,7 @@ public class SMPGuiManager {
                 if (plugin != null) {
                     plugin.reloadConfig();
                 }
-                if (eventManager != null) {
-                    eventManager.loadAirdropConfig();
-                }
-                player.sendMessage("§a[Willy Money SMP] Configuration and airdrops reloaded successfully!");
+                player.sendMessage("§a[Willy Money SMP] Configuration reloaded successfully!");
                 player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_CHIME, 1.0f, 1.5f);
                 break;
 

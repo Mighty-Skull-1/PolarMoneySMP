@@ -34,6 +34,11 @@ public class BingoCommand implements CommandExecutor {
         }
 
         if (sender instanceof Player player) {
+            // Locked until the event starts so nobody can study the board early (admins can still preview).
+            if (!eventManager.isBingoActive() && !player.hasPermission("moneysmp.admin")) {
+                player.sendMessage("§c[BINGO] Bingo hasn't started yet! The board opens for everyone at the same time when the event begins.");
+                return true;
+            }
             eventManager.openBingoGUI(player);
         } else {
             sender.sendMessage("§cOnly players can open the Bingo GUI!");

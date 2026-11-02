@@ -3,7 +3,7 @@ version: 3.3-SNAPSHOT
 main: me.moneysmp.MoneySMP
 api-version: 1.20
 authors: [Jelani, Willy]
-description: Full-featured tournament engine with Phase controls, Hologram KOTH, Flare Airdrops, Interactive GUI Bingo, and Draft Economy.
+description: Full-featured tournament engine with Phase controls, Capture Points, Interactive GUI Bingo, and Draft Economy.
 website: https://willy-money-smp-web.vercel.app/
 
 commands:
@@ -20,8 +20,6 @@ commands:
   tc:
     description: Send a private message to your team
     aliases: [teamchat]
-  tracker:
-    description: Receive a Team Tracker compass
   announce:
     description: Broadcast a server announcement with sound
     aliases: [broadcast, alert]
@@ -29,11 +27,9 @@ commands:
   titleannounce:
     description: Fullscreen title announcement
     permission: moneysmp.admin
-  koth:
-    description: Start or stop King of the Hill events
-    permission: moneysmp.admin
-  airdrop:
-    description: Spawn supply drop crates
+  cp:
+    description: "Capture points: set, startday, list, open, stopday, remove"
+    aliases: [capture, capturepoint]
     permission: moneysmp.admin
   freefall:
     description: "Optional shrinking world border to push teams together (start, center, status, stop, end, reset)"

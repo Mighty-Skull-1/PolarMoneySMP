@@ -5,6 +5,7 @@ public enum PlayerTier {
     A("§e§l[TIER-A]"),
     B("§a§l[TIER-B]"),
     C("§b§l[TIER-C]"),
+    D("§d§l[TIER-D]"),
     NONE("§7[NO TIER]");
 
     private final String prefix;
