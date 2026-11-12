@@ -1,4 +1,4 @@
-config-version: 7
+config-version: 8
 
 starting-draft-credits: 300
 starting-game-credits: 100
@@ -71,9 +71,8 @@ web-server:
 # Capture Points (replaces airdrops). Save up to 8 with /cp set <name>, then /cp startday each day.
 capture-points:
   reward: 75                 # credits to the capturing team's captain
-  radius: 6                  # zone size in blocks
-  control-seconds: 240       # phase 1: hold the majority for 4 minutes
-  capture-seconds: 480       # phase 2: keep holding for 8 more minutes
+  size: 16                   # zone is a size x size square (16 x 16 blocks) centred on the point
+  capture-seconds: 720       # hold the majority for 12 minutes to capture
   per-day: 5                 # points opened per day (picked at random from the saved ones)
   max-active: 2              # how many can be open at the same time
   steal-drain-speed: 2       # how fast another team drains your progress when they have the majority

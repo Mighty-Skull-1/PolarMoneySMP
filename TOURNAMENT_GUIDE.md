@@ -115,8 +115,8 @@ Players are classified into four skill tiers:
 ### Capture Points (Season 2 - replaces KOTH and airdrops)
 - **Set up**: stand on each spot and run `/cp set <name>` (8 points around the map).
 - **Each day**: `/cp startday` (or the banner in `/smp`) picks 5 of the 8 at random. Only 2 are open at once; when one is captured the next opens.
-- **Majority rule**: the team with the most players inside the zone (radius 6) makes progress. A tie for most = contested (frozen). Extra players don't speed it up.
-- **Two phases**: hold it for 4 minutes (control), then 8 more minutes (capture). A boss bar shows who's holding each point and the time left.
+- **Majority rule**: the team with the most players inside the 16 x 16 square zone makes progress. A tie for most = contested (frozen). Extra players don't speed it up.
+- **Capturing**: hold it for 12 minutes. A boss bar shows who's capturing each point and the time left; when it's done the point has been captured by that team.
 - **Stealing**: if another team gets the majority, the old team's progress drains (2x speed), then the new team starts from zero.
 - **Reward**: +75 credits to the capturing team's captain. `/cp list`, `/cp open <name>`, `/cp stopday`, `/cp remove <name>`.
 

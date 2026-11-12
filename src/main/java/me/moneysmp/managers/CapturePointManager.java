@@ -20,7 +20,7 @@ import java.util.*;
  *   when one is captured the next one opens, until the day's points are all done.
  * - The team with the MOST players inside the zone makes progress. A tie for most = contested (frozen).
  *   Extra players don't speed it up.
- * - Control phase (4 min) then Capture phase (8 min) = one continuous progress bar.
+ * - One continuous 12-minute capture inside a 16x16 square zone.
  * - If another team takes the majority, the old team's progress drains (2x speed). Once it hits 0 the new
  *   team starts its own progress from 0. Nobody inside = frozen.
  * - Completing the capture pays capture-points.reward (75) to the team captain and opens the next point.
@@ -53,10 +53,10 @@ public class CapturePointManager {
     }
 
     // ---------------------------------------------------------------- settings
-    private int radius() { return Math.max(2, plugin.getConfig().getInt("capture-points.radius", 6)); }
-    private int controlSecs() { return Math.max(10, plugin.getConfig().getInt("capture-points.control-seconds", 240)); }
-    private int captureSecs() { return Math.max(10, plugin.getConfig().getInt("capture-points.capture-seconds", 480)); }
-    private int total() { return controlSecs() + captureSecs(); }
+    /** Zone is a square: size x size blocks centred on the point (default 16 x 16). */
+    private double half() { return Math.max(2, plugin.getConfig().getInt("capture-points.size", 16)) / 2.0; }
+    /** One continuous capture timer (default 12 minutes). */
+    private int total() { return Math.max(10, plugin.getConfig().getInt("capture-points.capture-seconds", 720)); }
     private int reward() { return plugin.getConfig().getInt("capture-points.reward", 75); }
     private int perDay() { return Math.max(1, plugin.getConfig().getInt("capture-points.per-day", 5)); }
     private int maxActive() { return Math.max(1, plugin.getConfig().getInt("capture-points.max-active", 2)); }
@@ -154,7 +154,7 @@ public class CapturePointManager {
         active.put(name, p);
         updateBar(p);
         Bukkit.broadcastMessage("§b§l[CAPTURE POINT OPEN] §f" + pretty(name) + " §7at §e" + loc.getBlockX() + ", " + loc.getBlockY() + ", " + loc.getBlockZ()
-                + " §7- hold it with the most players for §e" + fmt(controlSecs()) + " §7(control) then §e" + fmt(captureSecs()) + " §7(capture).");
+                + " §7- hold the " + (int) (half() * 2) + "x" + (int) (half() * 2) + " zone with the most players for §e" + fmt(total()) + " §7to capture it.");
     }
 
     private void ensureTask() {
@@ -171,12 +171,12 @@ public class CapturePointManager {
 
     private void tickPoint(Point p) {
         Map<String, Integer> counts = new HashMap<>();
-        int r = radius();
+        double h = half();
         for (Player pl : p.center.getWorld().getPlayers()) {
             if (pl.getGameMode() == GameMode.SPECTATOR || pl.isDead()) continue;
             Location l = pl.getLocation();
             double dx = l.getX() - p.center.getX(), dz = l.getZ() - p.center.getZ(), dy = l.getY() - p.center.getY();
-            if (dx * dx + dz * dz > r * r || dy < -3 || dy > 8) continue;      // only players physically inside count
+            if (Math.abs(dx) > h || Math.abs(dz) > h || dy < -3 || dy > 8) continue;      // only players physically inside count
             Team t = teamManager.getTeamByPlayer(pl.getUniqueId());
             if (t != null) counts.merge(t.getName().toLowerCase(Locale.ROOT), 1, Integer::sum);
         }
@@ -198,16 +198,7 @@ public class CapturePointManager {
             }
         }
         if (leader.equals(p.owner)) {
-            int before = p.progress;
             p.progress++;
-            if (before < controlSecs() && p.progress >= controlSecs()) {
-                Team t = teamManager.getTeamByName(p.owner);
-                if (t != null) {
-                    Bukkit.broadcastMessage("§b§l[Capture] " + t.getColorCode() + t.getName() + " §ehas CONTROL of §f" + pretty(p.name)
-                            + "§e! §7Capturing... §e" + fmt(captureSecs()) + " §7left - stop them!");
-                    for (Player pl : Bukkit.getOnlinePlayers()) pl.playSound(pl.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 1f, 0.8f);
-                }
-            }
             if (p.progress >= total()) { captured(p); return; }
         } else {
             // Another team has the majority: drain the current owner's progress, then they start from zero.
@@ -230,10 +221,10 @@ public class CapturePointManager {
         capturedToday++;
         if (t != null) {
             creditManager.addGameCredits(t.getCaptain(), reward());
-            Bukkit.broadcastMessage("§b§l[CAPTURED] " + t.getColorCode() + t.getName() + " §ecaptured §f" + pretty(p.name) + " §eand earned §a+"
-                    + reward() + " credits§e! §7(" + capturedToday + "/" + Math.max(plannedToday, capturedToday) + " today)");
+            Bukkit.broadcastMessage("§b§l[CAPTURED] §f" + pretty(p.name) + " §ehas been captured by " + t.getColorCode() + t.getName()
+                    + "§e! §a+" + reward() + " credits §7(" + capturedToday + "/" + Math.max(plannedToday, capturedToday) + " today)");
             for (Player pl : Bukkit.getOnlinePlayers()) {
-                pl.sendTitle(t.getColorCode() + "§l" + t.getName().toUpperCase(), "§ecaptured " + pretty(p.name) + " §a+" + reward(), 5, 50, 15);
+                pl.sendTitle("§f" + pretty(p.name) + " §ecaptured", "§eby " + t.getColorCode() + t.getName() + " §a+" + reward(), 5, 50, 15);
                 pl.playSound(pl.getLocation(), Sound.UI_TOAST_CHALLENGE_COMPLETE, 1f, 1f);
             }
             p.center.getWorld().spawnParticle(Particle.FIREWORK, p.center.clone().add(0, 2, 0), 120, 2, 2, 2, 0.15);
@@ -253,11 +244,10 @@ public class CapturePointManager {
             prog = 0;
             p.bar.setColor(BarColor.WHITE);
         } else {
-            boolean capturing = p.progress >= controlSecs();
-            int left = capturing ? total() - p.progress : controlSecs() - p.progress;
-            prog = capturing ? (p.progress - controlSecs()) / (double) captureSecs() : p.progress / (double) controlSecs();
+            int left = total() - p.progress;
+            prog = p.progress / (double) total();
             title = "§f⚑ " + pretty(p.name) + " " + where + " §8| " + t.getColorCode() + t.getName() + " "
-                    + (capturing ? "§6CAPTURING" : "§eCONTROLLING") + " §f" + fmt(left)
+                    + "§6CAPTURING" + " §f" + fmt(left)
                     + (p.contested ? " §c§lCONTESTED" : "");
             p.bar.setColor(barColor(t.getName()));
         }
@@ -268,13 +258,16 @@ public class CapturePointManager {
 
     private void particles(Point p) {
         World w = p.center.getWorld();
-        int r = radius();
+        double h = half();
         Team t = p.owner == null ? null : teamManager.getTeamByName(p.owner);
         Color c = t == null ? Color.WHITE : dyeColor(t.getName());
         Particle.DustOptions dust = new Particle.DustOptions(c, 1.6f);
-        for (int i = 0; i < 48; i++) {
-            double a = Math.PI * 2 * i / 48;
-            w.spawnParticle(Particle.DUST, p.center.getX() + Math.cos(a) * r, p.center.getY() + 0.3, p.center.getZ() + Math.sin(a) * r, 1, 0, 0, 0, 0, dust);
+        double y0 = p.center.getY() + 0.3;
+        for (double d = -h; d <= h; d += 1.0) {   // square outline
+            w.spawnParticle(Particle.DUST, p.center.getX() + d, y0, p.center.getZ() - h, 1, 0, 0, 0, 0, dust);
+            w.spawnParticle(Particle.DUST, p.center.getX() + d, y0, p.center.getZ() + h, 1, 0, 0, 0, 0, dust);
+            w.spawnParticle(Particle.DUST, p.center.getX() - h, y0, p.center.getZ() + d, 1, 0, 0, 0, 0, dust);
+            w.spawnParticle(Particle.DUST, p.center.getX() + h, y0, p.center.getZ() + d, 1, 0, 0, 0, 0, dust);
         }
         for (int y = 0; y < 12; y += 2) w.spawnParticle(Particle.DUST, p.center.clone().add(0, y, 0), 1, 0, 0, 0, 0, dust);
     }

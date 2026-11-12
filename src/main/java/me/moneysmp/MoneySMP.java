@@ -343,6 +343,16 @@ public class MoneySMP extends JavaPlugin {
             saveConfig();
             getLogger().info("Updated config.yml for Season 2: S/A/B/C/D kill rewards 30/25/20/15/10, 4 teams, capture points, no draft timer.");
         }
+        if (getConfig().getInt("config-version", 1) < 8) {
+            // Capture points: one 12-minute capture in a 16 x 16 square.
+            getConfig().set("capture-points.capture-seconds", 720);
+            getConfig().set("capture-points.size", 16);
+            getConfig().set("capture-points.control-seconds", null);
+            getConfig().set("capture-points.radius", null);
+            getConfig().set("config-version", 8);
+            saveConfig();
+            getLogger().info("Updated config.yml: capture points are one 12-minute capture in a 16x16 square.");
+        }
     }
 
     public me.moneysmp.web.WebServerManager getWebServerManager() {
