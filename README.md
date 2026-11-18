@@ -159,7 +159,7 @@ To ensure competitive tournament balance and eliminate instant-escape teleportat
     - **Slot 35 (Placement Rewards)**: Gold Ingot displaying tiered payouts (1st: 150, 2nd: 120, 3rd: 100, 4th: 50, 5th: 25).
     - **Slot 53 (Close Button)**: Barrier button to exit the menu.
 - **Task Tracking**:
-  - Auto-tracking covers all 25 survival objectives (Season 2 board: Trade with a Villager, Tame a Horse, Craft Golden Carrots, Eat Suspicious Stew, Fill a Map, Mine Emerald Ore, Obtain Heavy Core, Obtain a Goat Horn, Find a Shipwreck, Obtain a Nautilus Shell, Get a Music Disc, Find an Armor Trim, Kill a Warden, Brew a Potion of Oozing, Enchant a Diamond Sword, Craft a Lodestone, Kill a Pillager Captain, Craft Beacon, Wear Full Leather, Kill a Ghast, Collect a Breeze Rod, Get a Trident, Kill an Elder Guardian, Find an Ancient City, Kill a Witch). Items held before bingo starts do not count.
+  - Auto-tracking covers all 25 survival objectives (the board is only revealed when bingo starts). Items held before bingo starts do not count.
 - **Lockout Rule**: The first team to complete a task claims it permanently in their team color—other teams are locked out.
 - **Rewards** (paid when an admin ends bingo with `/bingo stop`, ranked by **most squares claimed**):
   - **1st**: `+150` · **2nd**: `+120` · **3rd**: `+100` · **4th**: `+50` · **5th**: `+25` Game Credits to the Captain.
