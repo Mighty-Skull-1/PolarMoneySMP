@@ -85,31 +85,31 @@ public class EventManager {
         bingoBoard.clear();
         bingoIcons.clear();
 
-        addTask("Mine Ancient Debris", Material.ANCIENT_DEBRIS);
-        addTask("Tame a Cat", Material.COD);
-        addTask("Brew Invisibility", Material.POTION);
-        addTask("Craft Diamond Block", Material.DIAMOND_BLOCK);
-        addTask("Kill an Enderman", Material.ENDER_EYE);
-        addTask("Eat Golden Apple", Material.GOLDEN_APPLE);
+        addTask("Trade with a Villager", Material.EMERALD);
+        addTask("Tame a Horse", Material.SADDLE);
+        addTask("Craft Golden Carrots", Material.GOLDEN_CARROT);
+        addTask("Eat Suspicious Stew", Material.SUSPICIOUS_STEW);
+        addTask("Fill a Map", Material.FILLED_MAP);
+        addTask("Mine Emerald Ore", Material.EMERALD_ORE);
         addTask("Obtain Heavy Core", Material.HEAVY_CORE);
-        addTask("Catch a Pufferfish", Material.PUFFERFISH);
-        addTask("Ride a Strider", Material.WARPED_FUNGUS_ON_A_STICK);
-        addTask("Wear Full Iron", Material.IRON_CHESTPLATE);
-        addTask("Smelt Netherite", Material.NETHERITE_SCRAP);
-        addTask("Tame a Wolf", Material.BONE);
-        addTask("Find a Village", Material.EMERALD);
-        addTask("Bake a Cake", Material.CAKE);
-        addTask("Craft Enchanting Table", Material.ENCHANTING_TABLE);
-        addTask("Obtain Wither Skull", Material.WITHER_SKELETON_SKULL);
-        addTask("Brew Strength II", Material.BLAZE_POWDER);
+        addTask("Obtain a Goat Horn", Material.GOAT_HORN);
+        addTask("Find a Shipwreck", Material.OAK_BOAT);
+        addTask("Obtain a Nautilus Shell", Material.NAUTILUS_SHELL);
+        addTask("Get a Music Disc", Material.MUSIC_DISC_CAT);
+        addTask("Find an Armor Trim", Material.SENTRY_ARMOR_TRIM_SMITHING_TEMPLATE);
         addTask("Kill a Warden", Material.SCULK_SHRIEKER);
+        addTask("Brew Fire Resistance", Material.MAGMA_CREAM);
+        addTask("Enchant a Diamond Sword", Material.DIAMOND_SWORD);
+        addTask("Craft a Lodestone", Material.LODESTONE);
+        addTask("Kill a Pillager Captain", Material.WHITE_BANNER);
         addTask("Craft Beacon", Material.BEACON);
-        addTask("Shear a Sheep", Material.SHEARS);
-        addTask("Find Desert Temple", Material.TNT);
-        addTask("Kill Blazes", Material.BLAZE_ROD);
-        addTask("Mine 64 Coal", Material.COAL);
-        addTask("Catch Enchanted Book", Material.ENCHANTED_BOOK);
-        addTask("75-Block Water Clutch", Material.WATER_BUCKET);
+        addTask("Wear Full Leather", Material.LEATHER_CHESTPLATE);
+        addTask("Kill a Ghast", Material.GHAST_TEAR);
+        addTask("Collect a Breeze Rod", Material.BREEZE_ROD);
+        addTask("Get a Trident", Material.TRIDENT);
+        addTask("Kill an Elder Guardian", Material.PRISMARINE_SHARD);
+        addTask("Find an Ancient City", Material.SCULK_CATALYST);
+        addTask("Kill a Witch", Material.CAULDRON);
     }
 
     private void addTask(String task, Material icon) {

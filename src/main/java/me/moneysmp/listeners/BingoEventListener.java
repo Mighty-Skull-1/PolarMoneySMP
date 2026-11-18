@@ -1,22 +1,34 @@
 package me.moneysmp.listeners;
 
+import io.papermc.paper.event.player.PlayerTradeEvent;
 import me.moneysmp.managers.EventManager;
+import org.bukkit.Bukkit;
+import org.bukkit.Chunk;
+import org.bukkit.GameMode;
+import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.block.Biome;
 import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.enchantment.EnchantItemEvent;
 import org.bukkit.event.entity.*;
 import org.bukkit.event.inventory.CraftItemEvent;
-import org.bukkit.event.inventory.FurnaceExtractEvent;
-import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.*;
+import org.bukkit.generator.structure.GeneratedStructure;
+import org.bukkit.generator.structure.Structure;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.potion.PotionEffectType;
+import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.potion.PotionEffectType;
 
+/**
+ * Season 2 bingo board detection (25 tasks).
+ * "Obtain/Get/Collect" tasks are checked by scanning inventories every 2 seconds (so chests, trades,
+ * drops and fishing all count). "Find a Shipwreck / Ancient City" are checked by standing inside the structure.
+ */
 public class BingoEventListener implements Listener {
     private final JavaPlugin plugin;
     private final EventManager eventManager;
@@ -24,222 +36,158 @@ public class BingoEventListener implements Listener {
     public BingoEventListener(JavaPlugin plugin, EventManager eventManager) {
         this.plugin = plugin;
         this.eventManager = eventManager;
+        // Inventory + structure checks every 2 seconds while bingo is running.
+        Bukkit.getScheduler().runTaskTimer(plugin, this::periodicChecks, 40L, 40L);
     }
 
-    @EventHandler
-    public void onBlockBreak(BlockBreakEvent event) {
-        Player player = event.getPlayer();
-        Material mat = event.getBlock().getType();
+    /**
+     * What each player already had when bingo started (or when they were first seen during it).
+     * Items brought in from before don't count - you have to get them during bingo.
+     */
+    private final java.util.Map<java.util.UUID, java.util.Set<String>> baseline = new java.util.HashMap<>();
 
-        if (mat == Material.ANCIENT_DEBRIS) {
-            eventManager.claimBingo(player, "Mine Ancient Debris");
-        }
+    private void claim(Player p, String task) { eventManager.claimBingo(p, task); }
 
-        if (mat == Material.HEAVY_CORE) {
-            eventManager.claimBingo(player, "Obtain Heavy Core");
-        }
-
-        if (mat == Material.COAL_ORE || mat == Material.DEEPSLATE_COAL_ORE || mat == Material.COAL_BLOCK) {
-            if (plugin != null) {
-                plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
-                    if (player.isOnline() && player.getInventory().containsAtLeast(new ItemStack(Material.COAL), 64)) {
-                        eventManager.claimBingo(player, "Mine 64 Coal");
-                    }
-                }, 5L);
-            } else if (player.getInventory().containsAtLeast(new ItemStack(Material.COAL), 64)) {
-                eventManager.claimBingo(player, "Mine 64 Coal");
-            }
+    // ------------------------------------------------------------ periodic checks
+    private void periodicChecks() {
+        if (!eventManager.isBingoActive()) { baseline.clear(); return; }
+        for (Player p : Bukkit.getOnlinePlayers()) {
+            if (p.getGameMode() == GameMode.SPECTATOR) continue;
+            scanInventory(p);
+            checkStructures(p);
         }
     }
 
-    @EventHandler
-    public void onCraft(CraftItemEvent event) {
-        if (!(event.getWhoClicked() instanceof Player player)) return;
-        ItemStack result = event.getRecipe().getResult();
-
-        if (result.getType() == Material.DIAMOND_BLOCK) eventManager.claimBingo(player, "Craft Diamond Block");
-        if (result.getType() == Material.CAKE) eventManager.claimBingo(player, "Bake a Cake");
-        if (result.getType() == Material.ENCHANTING_TABLE) eventManager.claimBingo(player, "Craft Enchanting Table");
-        if (result.getType() == Material.BEACON) eventManager.claimBingo(player, "Craft Beacon");
+    private void scanInventory(Player p) {
+        java.util.Set<String> now = heldTasks(p);
+        java.util.Set<String> base = baseline.get(p.getUniqueId());
+        if (base == null) { baseline.put(p.getUniqueId(), now); return; }   // first look: just remember what they had
+        for (String task : now) if (!base.contains(task)) claim(p, task);
+        base.retainAll(now);   // once they drop/use a starting item, getting one again counts
     }
 
-    @EventHandler
-    public void onTame(EntityTameEvent event) {
-        if (!(event.getOwner() instanceof Player player)) return;
-
-        if (event.getEntity() instanceof Cat) eventManager.claimBingo(player, "Tame a Cat");
-        if (event.getEntity() instanceof Wolf) eventManager.claimBingo(player, "Tame a Wolf");
+    /** The "obtain / wear" tasks this player's inventory currently satisfies. */
+    private java.util.Set<String> heldTasks(Player p) {
+        java.util.Set<String> out = new java.util.HashSet<>();
+        PlayerInventory inv = p.getInventory();
+        for (ItemStack it : inv.getContents()) {
+            if (it == null) continue;
+            Material m = it.getType();
+            String n = m.name();
+            if (m == Material.HEAVY_CORE) out.add("Obtain Heavy Core");
+            else if (m == Material.GOAT_HORN) out.add("Obtain a Goat Horn");
+            else if (m == Material.NAUTILUS_SHELL) out.add("Obtain a Nautilus Shell");
+            else if (n.startsWith("MUSIC_DISC_")) out.add("Get a Music Disc");
+            else if (n.endsWith("_ARMOR_TRIM_SMITHING_TEMPLATE")) out.add("Find an Armor Trim");
+            else if (m == Material.BREEZE_ROD) out.add("Collect a Breeze Rod");
+            else if (m == Material.TRIDENT) out.add("Get a Trident");
+            else if (m == Material.DIAMOND_SWORD && !it.getEnchantments().isEmpty()) out.add("Enchant a Diamond Sword");
+        }
+        if (is(inv.getHelmet(), Material.LEATHER_HELMET) && is(inv.getChestplate(), Material.LEATHER_CHESTPLATE)
+                && is(inv.getLeggings(), Material.LEATHER_LEGGINGS) && is(inv.getBoots(), Material.LEATHER_BOOTS)) {
+            out.add("Wear Full Leather");
+        }
+        return out;
     }
 
-    @EventHandler
-    public void onFish(PlayerFishEvent event) {
-        Player player = event.getPlayer();
-        if (event.getCaught() instanceof Item caughtItem) {
-            Material mat = caughtItem.getItemStack().getType();
-            if (mat == Material.PUFFERFISH) {
-                eventManager.claimBingo(player, "Catch a Pufferfish");
-            } else if (mat == Material.ENCHANTED_BOOK) {
-                eventManager.claimBingo(player, "Catch Enchanted Book");
-            }
+    private static boolean is(ItemStack it, Material m) { return it != null && it.getType() == m; }
+
+    private void checkStructures(Player p) {
+        Location l = p.getLocation();
+        Chunk c = l.getChunk();
+        try {
+            if (inside(p, c, Structure.SHIPWRECK) || inside(p, c, Structure.SHIPWRECK_BEACHED)) claim(p, "Find a Shipwreck");
+            if (inside(p, c, Structure.ANCIENT_CITY)) claim(p, "Find an Ancient City");
+        } catch (Throwable ignored) {
+            // structure lookup not available on this server version - the chest check below still works
         }
     }
 
-    @EventHandler
-    public void onEntityKill(EntityDeathEvent event) {
-        Player killer = event.getEntity().getKiller();
-        if (killer == null) return;
-
-        if (event.getEntity() instanceof Enderman) eventManager.claimBingo(killer, "Kill an Enderman");
-        if (event.getEntity() instanceof Warden) eventManager.claimBingo(killer, "Kill a Warden");
-        if (event.getEntity() instanceof Blaze) eventManager.claimBingo(killer, "Kill Blazes");
-        if (event.getEntity() instanceof WitherSkeleton) {
-            for (ItemStack drop : event.getDrops()) {
-                if (drop.getType() == Material.WITHER_SKELETON_SKULL) {
-                    eventManager.claimBingo(killer, "Obtain Wither Skull");
-                    break;
-                }
-            }
+    private boolean inside(Player p, Chunk c, Structure s) {
+        for (GeneratedStructure g : p.getWorld().getStructures(c.getX(), c.getZ(), s)) {
+            if (g.getBoundingBox().contains(p.getLocation().toVector())) return true;
         }
+        return false;
+    }
+
+    // ------------------------------------------------------------ events
+    @EventHandler
+    public void onBlockBreak(BlockBreakEvent e) {
+        Material m = e.getBlock().getType();
+        if (m == Material.EMERALD_ORE || m == Material.DEEPSLATE_EMERALD_ORE) claim(e.getPlayer(), "Mine Emerald Ore");
+        if (m == Material.HEAVY_CORE) claim(e.getPlayer(), "Obtain Heavy Core");
     }
 
     @EventHandler
-    public void onConsume(PlayerItemConsumeEvent event) {
-        Player player = event.getPlayer();
-        Material mat = event.getItem().getType();
-        if (mat == Material.GOLDEN_APPLE || mat == Material.ENCHANTED_GOLDEN_APPLE) {
-            eventManager.claimBingo(player, "Eat Golden Apple");
-        }
+    public void onCraft(CraftItemEvent e) {
+        if (!(e.getWhoClicked() instanceof Player p)) return;
+        Material r = e.getRecipe().getResult().getType();
+        if (r == Material.GOLDEN_CARROT) claim(p, "Craft Golden Carrots");
+        if (r == Material.LODESTONE) claim(p, "Craft a Lodestone");
+        if (r == Material.BEACON) claim(p, "Craft Beacon");
     }
 
     @EventHandler
-    public void onShear(PlayerShearEntityEvent event) {
-        if (event.getEntity() instanceof Sheep) {
-            eventManager.claimBingo(event.getPlayer(), "Shear a Sheep");
-        }
+    public void onTame(EntityTameEvent e) {
+        if (e.getOwner() instanceof Player p && e.getEntity() instanceof Horse) claim(p, "Tame a Horse");
     }
 
     @EventHandler
-    public void onMount(EntityMountEvent event) {
-        if (event.getEntity() instanceof Player player && event.getMount() instanceof Strider) {
-            eventManager.claimBingo(player, "Ride a Strider");
-        }
+    public void onTrade(PlayerTradeEvent e) {
+        if (e.getVillager() instanceof Villager) claim(e.getPlayer(), "Trade with a Villager");
     }
 
     @EventHandler
-    public void onSmeltExtract(FurnaceExtractEvent event) {
-        if (event.getItemType() == Material.NETHERITE_SCRAP) {
-            eventManager.claimBingo(event.getPlayer(), "Smelt Netherite");
-        }
+    public void onConsume(PlayerItemConsumeEvent e) {
+        if (e.getItem().getType() == Material.SUSPICIOUS_STEW) claim(e.getPlayer(), "Eat Suspicious Stew");
     }
 
-    @EventHandler
-    public void onPotionEffect(EntityPotionEffectEvent event) {
-        if (event.getEntity() instanceof Player player && event.getNewEffect() != null) {
-            if (event.getNewEffect().getType() == PotionEffectType.INVISIBILITY) {
-                eventManager.claimBingo(player, "Brew Invisibility");
-            } else if (event.getNewEffect().getType() == PotionEffectType.STRENGTH && event.getNewEffect().getAmplifier() >= 1) {
-                eventManager.claimBingo(player, "Brew Strength II");
-            }
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onInteract(PlayerInteractEvent e) {
+        Player p = e.getPlayer();
+        // Fill a Map: right-click an empty map.
+        if ((e.getAction() == Action.RIGHT_CLICK_AIR || e.getAction() == Action.RIGHT_CLICK_BLOCK) && e.getItem() != null
+                && e.getItem().getType() == Material.MAP) {
+            claim(p, "Fill a Map");
         }
-    }
-
-    @EventHandler
-    public void onPickup(EntityPickupItemEvent event) {
-        if (event.getEntity() instanceof Player player) {
-            Material mat = event.getItem().getItemStack().getType();
-            if (mat == Material.HEAVY_CORE) {
-                eventManager.claimBingo(player, "Obtain Heavy Core");
-            } else if (mat == Material.WITHER_SKELETON_SKULL) {
-                eventManager.claimBingo(player, "Obtain Wither Skull");
-            } else if (mat == Material.COAL) {
-                if (plugin != null) {
-                    plugin.getServer().getScheduler().runTask(plugin, () -> {
-                        if (player.isOnline() && player.getInventory().containsAtLeast(new ItemStack(Material.COAL), 64)) {
-                            eventManager.claimBingo(player, "Mine 64 Coal");
-                        }
-                    });
-                }
-            }
+        // Opening a structure chest also counts as finding the structure (backup for the area check).
+        if (e.getAction() == Action.RIGHT_CLICK_BLOCK && e.getClickedBlock() != null
+                && e.getClickedBlock().getState() instanceof org.bukkit.loot.Lootable lootable && lootable.getLootTable() != null) {
+            String key = lootable.getLootTable().getKey().getKey();
+            if (key.contains("shipwreck")) claim(p, "Find a Shipwreck");
+            if (key.contains("ancient_city")) claim(p, "Find an Ancient City");
         }
     }
 
     @EventHandler
-    public void onInteractEntity(PlayerInteractEntityEvent event) {
-        if (event.getRightClicked() instanceof Villager) {
-            eventManager.claimBingo(event.getPlayer(), "Find a Village");
+    public void onEnchant(EnchantItemEvent e) {
+        if (e.getItem().getType() == Material.DIAMOND_SWORD) claim(e.getEnchanter(), "Enchant a Diamond Sword");
+    }
+
+    @EventHandler
+    public void onPotionEffect(EntityPotionEffectEvent e) {
+        if (!(e.getEntity() instanceof Player p) || e.getNewEffect() == null) return;
+        if (e.getNewEffect().getType() != PotionEffectType.FIRE_RESISTANCE) return;
+        EntityPotionEffectEvent.Cause c = e.getCause();
+        if (c == EntityPotionEffectEvent.Cause.POTION_DRINK || c == EntityPotionEffectEvent.Cause.POTION_SPLASH
+                || c == EntityPotionEffectEvent.Cause.AREA_EFFECT_CLOUD) {
+            claim(p, "Brew Fire Resistance");
         }
     }
 
     @EventHandler
-    public void onInteract(PlayerInteractEvent event) {
-        Player player = event.getPlayer();
-        checkFullIron(player);
-
-        if (event.getAction() == Action.PHYSICAL && event.getClickedBlock() != null) {
-            if (event.getClickedBlock().getType() == Material.STONE_PRESSURE_PLATE) {
-                Biome biome = event.getClickedBlock().getBiome();
-                if (biome.name().contains("DESERT")) {
-                    eventManager.claimBingo(player, "Find Desert Temple");
-                }
-            }
-        }
-    }
-
-    @EventHandler
-    public void onBucketEmpty(PlayerBucketEmptyEvent event) {
-        Player player = event.getPlayer();
-        if (event.getBucket() == Material.WATER_BUCKET) {
-            if (player.getFallDistance() >= 75.0f) {
-                if (plugin != null) {
-                    plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
-                        if (player.isOnline() && !player.isDead()) {
-                            eventManager.claimBingo(player, "75-Block Water Clutch");
-                        }
-                    }, 2L);
-                } else if (!player.isDead()) {
-                    eventManager.claimBingo(player, "75-Block Water Clutch");
-                }
-            }
-        }
-    }
-
-    @EventHandler
-    public void onEntityDamage(EntityDamageEvent event) {
-        if (event.getEntity() instanceof Player player && event.getCause() == EntityDamageEvent.DamageCause.FALL) {
-            if (player.getFallDistance() >= 75.0f) {
-                Material standingIn = player.getLocation().getBlock().getType();
-                if (standingIn == Material.WATER) {
-                    event.setCancelled(true);
-                    eventManager.claimBingo(player, "75-Block Water Clutch");
-                }
-            }
-        }
-    }
-
-    @EventHandler
-    public void onInventoryClick(InventoryClickEvent event) {
-        if (event.getWhoClicked() instanceof Player player) {
-            if (event.getCurrentItem() != null && event.getCurrentItem().getType() == Material.HEAVY_CORE) {
-                eventManager.claimBingo(player, "Obtain Heavy Core");
-            }
-            if (plugin != null) {
-                plugin.getServer().getScheduler().runTask(plugin, () -> checkFullIron(player));
-            }
-        }
-    }
-
-    private void checkFullIron(Player player) {
-        if (player == null || !player.isOnline()) return;
-        ItemStack helmet = player.getInventory().getHelmet();
-        ItemStack chestplate = player.getInventory().getChestplate();
-        ItemStack leggings = player.getInventory().getLeggings();
-        ItemStack boots = player.getInventory().getBoots();
-
-        if (helmet != null && helmet.getType() == Material.IRON_HELMET &&
-                chestplate != null && chestplate.getType() == Material.IRON_CHESTPLATE &&
-                leggings != null && leggings.getType() == Material.IRON_LEGGINGS &&
-                boots != null && boots.getType() == Material.IRON_BOOTS) {
-            eventManager.claimBingo(player, "Wear Full Iron");
+    public void onKill(EntityDeathEvent e) {
+        Player k = e.getEntity().getKiller();
+        if (k == null) return;
+        LivingEntity v = e.getEntity();
+        if (v instanceof Warden) claim(k, "Kill a Warden");
+        if (v instanceof Ghast) claim(k, "Kill a Ghast");
+        if (v instanceof ElderGuardian) claim(k, "Kill an Elder Guardian");
+        if (v instanceof Witch) claim(k, "Kill a Witch");
+        if (v instanceof Raider r) {
+            boolean banner = v.getEquipment() != null && v.getEquipment().getHelmet() != null
+                    && v.getEquipment().getHelmet().getType() == Material.WHITE_BANNER;
+            if (r.isPatrolLeader() || banner) claim(k, "Kill a Pillager Captain");
         }
     }
 }
