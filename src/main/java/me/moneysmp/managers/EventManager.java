@@ -310,31 +310,31 @@ public class EventManager {
     public String getTaskDescription(String task) {
         if (task == null) return "Complete the challenge";
         switch (task) {
-            case "Mine Ancient Debris": return "Mine an Ancient Debris block in the Nether";
-            case "Tame a Cat": return "Feed raw fish to a stray cat to tame it";
-            case "Brew Invisibility": return "Brew and drink an Invisibility potion";
-            case "Craft Diamond Block": return "Combine 9 Diamonds in a crafting table";
-            case "Kill an Enderman": return "Slay an Enderman in combat";
-            case "Eat Golden Apple": return "Consume a Golden or Enchanted Apple";
+            case "Trade with a Villager": return "Complete a trade with any villager";
+            case "Tame a Horse": return "Ride a wild horse until it's tamed";
+            case "Craft Golden Carrots": return "Craft Golden Carrots (carrot + gold nuggets)";
+            case "Eat Suspicious Stew": return "Eat a bowl of Suspicious Stew";
+            case "Fill a Map": return "Right-click an empty map to fill it in";
+            case "Mine Emerald Ore": return "Mine an Emerald Ore block (mountains)";
             case "Obtain Heavy Core": return "Find a Heavy Core in an ominous vault";
-            case "Catch a Pufferfish": return "Catch a Pufferfish using a Fishing Rod";
-            case "Ride a Strider": return "Saddle and ride a Strider over lava";
-            case "Wear Full Iron": return "Equip a full set of Iron Armor";
-            case "Smelt Netherite": return "Smelt Ancient Debris into Netherite Scrap";
-            case "Tame a Wolf": return "Feed bones to a wild wolf to tame it";
-            case "Find a Village": return "Locate a village and interact with a villager";
-            case "Bake a Cake": return "Craft a Cake (wheat, sugar, milk, egg)";
-            case "Craft Enchanting Table": return "Craft an Enchanting Table with obsidian & diamonds";
-            case "Obtain Wither Skull": return "Slay a Wither Skeleton and loot its skull";
-            case "Brew Strength II": return "Brew and drink a Strength II potion";
-            case "Kill a Warden": return "Summon and defeat a Warden in the Deep Dark";
+            case "Obtain a Goat Horn": return "Get a Goat Horn (goats drop them when ramming)";
+            case "Find a Shipwreck": return "Stand inside a shipwreck or open one of its chests";
+            case "Obtain a Nautilus Shell": return "Get a Nautilus Shell (drowned, fishing or trades)";
+            case "Get a Music Disc": return "Get any Music Disc";
+            case "Find an Armor Trim": return "Get any armor trim smithing template";
+            case "Kill a Warden": return "Defeat a Warden in the Deep Dark";
+            case "Brew a Potion of Oozing": return "Drink or splash a Potion of Oozing";
+            case "Enchant a Diamond Sword": return "Enchant a Diamond Sword (table or anvil)";
+            case "Craft a Lodestone": return "Craft a Lodestone (netherite ingot + chiseled stone bricks)";
+            case "Kill a Pillager Captain": return "Kill the raider wearing the banner";
             case "Craft Beacon": return "Craft a Beacon using a Nether Star";
-            case "Shear a Sheep": return "Use Shears to collect wool from a sheep";
-            case "Find Desert Temple": return "Trigger the pressure plate in a Desert Pyramid";
-            case "Kill Blazes": return "Slay a Blaze in a Nether Fortress";
-            case "Mine 64 Coal": return "Gather a full stack of 64 Coal";
-            case "Catch Enchanted Book": return "Reel in an Enchanted Book while fishing";
-            case "75-Block Water Clutch": return "Survive a 75+ block fall by placing a water bucket before landing";
+            case "Wear Full Leather": return "Wear all 4 pieces of leather armor";
+            case "Kill a Ghast": return "Kill a Ghast in the Nether";
+            case "Collect a Breeze Rod": return "Get a Breeze Rod from a Breeze (Trial Chambers)";
+            case "Get a Trident": return "Get a Trident (drowned drop)";
+            case "Kill an Elder Guardian": return "Kill an Elder Guardian in an Ocean Monument";
+            case "Find an Ancient City": return "Stand inside an Ancient City or open one of its chests";
+            case "Kill a Witch": return "Kill a Witch";
             default: return "Complete the survival challenge";
         }
     }
