@@ -51,6 +51,21 @@ public class MoneySMPTabCompleter implements TabCompleter {
             if (args.length == 1) {
                 candidates.addAll(Arrays.asList("start", "stop"));
             }
+        } else if (command.getName().equalsIgnoreCase("fine")) {
+            if (args.length == 1) {
+                candidates.addAll(Arrays.asList("history", "undo"));
+                for (Team team : teamManager.getTeams()) {
+                    candidates.add(team.getName());
+                    for (java.util.UUID m : team.getMembers()) {
+                        String n = Bukkit.getOfflinePlayer(m).getName();
+                        if (n != null) candidates.add(n);
+                    }
+                }
+            } else if (args.length == 2 && !args[0].equalsIgnoreCase("history") && !args[0].equalsIgnoreCase("undo")) {
+                candidates.addAll(Arrays.asList("10", "25", "50", "100"));
+            } else if (args.length == 3 && !args[0].equalsIgnoreCase("history")) {
+                candidates.addAll(Arrays.asList("stream-sniping", "cross-teaming", "unfair-advantage", "pie-chart", "tnt", "exploit"));
+            }
         } else if (command.getName().equalsIgnoreCase("cp")) {
             if (args.length == 1) {
                 candidates.addAll(Arrays.asList("set", "startday", "list", "open", "stopday", "remove"));

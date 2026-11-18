@@ -27,6 +27,9 @@ commands:
   titleannounce:
     description: Fullscreen title announcement
     permission: moneysmp.admin
+  fine:
+    description: "Fine a player or team: /fine <player|team> <amount> <reason>, /fine history, /fine undo"
+    permission: moneysmp.admin
   cp:
     description: "Capture points: set, startday, list, open, stopday, remove"
     aliases: [capture, capturepoint]

@@ -88,6 +88,8 @@ public class MoneySMP extends JavaPlugin {
 
         getCommand("cp").setExecutor(new me.moneysmp.commands.CapturePointCommand(capturePointManager));
         getCommand("cp").setTabCompleter(tabCompleter);
+        getCommand("fine").setExecutor(new me.moneysmp.commands.FineCommand(this, teamManager, creditManager));
+        getCommand("fine").setTabCompleter(tabCompleter);
 
         getCommand("freefall").setExecutor(new FreeFallCommand(this, phaseManager, teamManager, creditManager));
         getCommand("freefall").setTabCompleter(tabCompleter);

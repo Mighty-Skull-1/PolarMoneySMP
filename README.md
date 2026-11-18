@@ -240,6 +240,7 @@ After running tests, you can completely reset everything to the beginning:
 | `/bid nominate <player>` | — | Put a player up for auction (captains get bid items, you get SOLD/CANCEL). |
 | `/bid cancel` | — | Cancel the active auction. |
 | `/bid sold` | — | Sell the player to the top bidder (same as the SOLD item). |
+| `/fine <player\|team> <amount> <reason>` | — | Fine a player or team (comes out of the team's money, player first). Also `/fine history`, `/fine undo`. Logged to fines.yml. |
 | `/cp startday` | — | Open today's capture points (also `set`, `list`, `open`, `stopday`, `remove`). |
 | `/credits give <player> <amt> [game\|draft]` | — | Give credits to a player. |
 | `/credits take <player> <amt> [game\|draft]` | — | Deduct credits from a player. |
