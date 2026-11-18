@@ -167,11 +167,11 @@ public class BingoEventListener implements Listener {
     @EventHandler
     public void onPotionEffect(EntityPotionEffectEvent e) {
         if (!(e.getEntity() instanceof Player p) || e.getNewEffect() == null) return;
-        if (e.getNewEffect().getType() != PotionEffectType.FIRE_RESISTANCE) return;
+        if (e.getNewEffect().getType() != PotionEffectType.OOZING) return;
         EntityPotionEffectEvent.Cause c = e.getCause();
         if (c == EntityPotionEffectEvent.Cause.POTION_DRINK || c == EntityPotionEffectEvent.Cause.POTION_SPLASH
                 || c == EntityPotionEffectEvent.Cause.AREA_EFFECT_CLOUD) {
-            claim(p, "Brew Fire Resistance");
+            claim(p, "Brew a Potion of Oozing");
         }
     }
 

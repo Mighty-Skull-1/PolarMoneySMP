@@ -98,7 +98,7 @@ public class EventManager {
         addTask("Get a Music Disc", Material.MUSIC_DISC_CAT);
         addTask("Find an Armor Trim", Material.SENTRY_ARMOR_TRIM_SMITHING_TEMPLATE);
         addTask("Kill a Warden", Material.SCULK_SHRIEKER);
-        addTask("Brew Fire Resistance", Material.MAGMA_CREAM);
+        addTask("Brew a Potion of Oozing", Material.SLIME_BLOCK);
         addTask("Enchant a Diamond Sword", Material.DIAMOND_SWORD);
         addTask("Craft a Lodestone", Material.LODESTONE);
         addTask("Kill a Pillager Captain", Material.WHITE_BANNER);
