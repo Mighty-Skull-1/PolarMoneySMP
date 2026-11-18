@@ -272,6 +272,50 @@ public class CapturePointManager {
         for (int y = 0; y < 12; y += 2) w.spawnParticle(Particle.DUST, p.center.clone().add(0, y, 0), 1, 0, 0, 0, 0, dust);
     }
 
+    // ---------------------------------------------------------------- reload / restart
+    /** Saves today's capture points (open points with their progress, and the ones still queued). */
+    public void saveState(ConfigurationSection out) {
+        out.set("queue", new ArrayList<>(todayQueue));
+        out.set("planned", plannedToday);
+        out.set("captured", capturedToday);
+        for (Point p : active.values()) {
+            out.set("active." + p.name + ".owner", p.owner);
+            out.set("active." + p.name + ".progress", p.progress);
+        }
+    }
+
+    /** Restores what saveState wrote, quietly, and carries on ticking. */
+    public void loadState(ConfigurationSection in) {
+        if (in == null) return;
+        Map<String, Location> saved = savedPoints();
+        todayQueue.clear();
+        for (String n : in.getStringList("queue")) if (saved.containsKey(n)) todayQueue.add(n);
+        plannedToday = in.getInt("planned");
+        capturedToday = in.getInt("captured");
+        ConfigurationSection act = in.getConfigurationSection("active");
+        if (act != null) {
+            for (String name : act.getKeys(false)) {
+                Location loc = saved.get(name);
+                if (loc == null) continue;
+                Point p = new Point(name, loc);
+                p.owner = act.getString(name + ".owner");
+                p.progress = act.getInt(name + ".progress");
+                p.bar = Bukkit.createBossBar("", BarColor.WHITE, BarStyle.SEGMENTED_10);
+                active.put(name, p);
+                updateBar(p);
+            }
+        }
+        if (!active.isEmpty() || !todayQueue.isEmpty()) {
+            ensureTask();
+            plugin.getLogger().info("Restored " + active.size() + " open capture point(s) after reload.");
+        }
+    }
+
+    /** Hides the boss bars without announcing anything (used when the plugin shuts down). */
+    public void hideBars() {
+        for (Point p : active.values()) if (p.bar != null) p.bar.removeAll();
+    }
+
     // ---------------------------------------------------------------- info
     public void sendList(CommandSender s) {
         Map<String, Location> saved = savedPoints();

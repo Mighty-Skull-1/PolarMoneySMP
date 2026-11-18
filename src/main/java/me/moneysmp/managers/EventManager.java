@@ -137,6 +137,44 @@ public class EventManager {
                 + " §8| §e3rd: §a+" + r[2] + " §8| §e4th: §a+" + r[3] + " §8| §e5th: §a+" + r[4]);
     }
 
+    /** Saves a running bingo so a /reload or restart carries on where it left off. */
+    public void saveState(org.bukkit.configuration.ConfigurationSection out) {
+        out.set("active", bingoActive);
+        if (!bingoActive) return;
+        for (Map.Entry<String, Team> e : bingoBoard.entrySet()) {
+            if (e.getValue() != null) out.set("claims." + taskOrder.indexOf(e.getKey()), e.getValue().getName());
+        }
+        out.set("lines", new ArrayList<>(completedLines));
+        List<String> winners = new ArrayList<>();
+        for (Team t : bingoWinnersOrder) winners.add(t.getName());
+        out.set("winners", winners);
+    }
+
+    /** Restores a bingo saved by saveState, quietly (no "bingo started" announcements). */
+    public void loadState(org.bukkit.configuration.ConfigurationSection in) {
+        if (in == null || !in.getBoolean("active")) return;
+        setupBingoTasks();
+        completedLines.clear();
+        bingoWinnersOrder.clear();
+        org.bukkit.configuration.ConfigurationSection claims = in.getConfigurationSection("claims");
+        if (claims != null) {
+            for (String idx : claims.getKeys(false)) {
+                try {
+                    int i = Integer.parseInt(idx);
+                    Team t = teamManager.getTeamByName(claims.getString(idx));
+                    if (t != null && i >= 0 && i < taskOrder.size()) bingoBoard.put(taskOrder.get(i), t);
+                } catch (NumberFormatException ignored) {}
+            }
+        }
+        completedLines.addAll(in.getStringList("lines"));
+        for (String n : in.getStringList("winners")) {
+            Team t = teamManager.getTeamByName(n);
+            if (t != null) bingoWinnersOrder.add(t);
+        }
+        bingoActive = true;
+        plugin.getLogger().info("Restored running bingo after reload.");
+    }
+
     /** Ends bingo and pays 1st-5th place by most squares claimed. */
     public void stopBingo() {
         stopBingo(true);

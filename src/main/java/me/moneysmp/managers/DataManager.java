@@ -27,6 +27,12 @@ public class DataManager {
     private final File dataFile;
     private FileConfiguration dataConfig;
 
+    /** data.yml existed but couldn't be read: we NEVER save over it (that would wipe the tournament). */
+    private boolean loadFailed = false;
+    /** data.yml had teams when loaded: an empty save after that is refused unless it's a full reset. */
+    private boolean hadTeamsOnLoad = false;
+    private boolean resetInProgress = false;
+
     public DataManager(JavaPlugin plugin, TeamManager teamManager, CreditManager creditManager,
                        TierManager tierManager, PhaseManager phaseManager, EliminationManager eliminationManager,
                        StatsManager statsManager) {
@@ -47,7 +53,23 @@ public class DataManager {
             return;
         }
 
-        dataConfig = YamlConfiguration.loadConfiguration(dataFile);
+        YamlConfiguration loaded = new YamlConfiguration();
+        try {
+            loaded.load(dataFile);
+        } catch (Exception e) {
+            loadFailed = true;
+            File broken = new File(plugin.getDataFolder(), "data-unreadable-" + stamp() + ".yml");
+            try { java.nio.file.Files.copy(dataFile.toPath(), broken.toPath()); } catch (IOException ignored) {}
+            plugin.getLogger().severe("==============================================================");
+            plugin.getLogger().severe("data.yml could not be read: " + e.getMessage());
+            plugin.getLogger().severe("NOTHING will be saved over it, so your tournament data is safe.");
+            plugin.getLogger().severe("A copy is at " + broken.getName() + ". Restore a file from the backups folder and restart.");
+            plugin.getLogger().severe("==============================================================");
+            dataConfig = new YamlConfiguration();
+            return;
+        }
+        dataConfig = loaded;
+        backup();
 
         // Load Phase
         String phaseStr = dataConfig.getString("phase");
@@ -126,10 +148,19 @@ public class DataManager {
         loadIntMap("kills", (uuid, value) -> statsManager.setKills(uuid, value));
         loadIntMap("deaths", (uuid, value) -> statsManager.setDeaths(uuid, value));
 
-        plugin.getLogger().info("Tournament data loaded successfully from data.yml");
+        hadTeamsOnLoad = !teamManager.getTeams().isEmpty();
+        plugin.getLogger().info("Tournament data loaded successfully from data.yml (" + teamManager.getTeams().size() + " teams)");
     }
 
     public void saveData() {
+        if (loadFailed) {
+            plugin.getLogger().warning("Not saving: data.yml couldn't be read at startup, so saving would overwrite it. Fix data.yml and restart.");
+            return;
+        }
+        if (hadTeamsOnLoad && teamManager.getTeams().isEmpty() && !resetInProgress) {
+            plugin.getLogger().warning("Not saving: no teams in memory but data.yml has teams. Refusing to overwrite it.");
+            return;
+        }
         dataConfig = new YamlConfiguration();
 
         // Save Phase
@@ -178,8 +209,16 @@ public class DataManager {
             dataConfig.set("deaths." + entry.getKey().toString(), entry.getValue());
         }
 
+        // Write to a temp file, then swap it in: a crash or reload mid-save can never leave a half-written data.yml.
+        File tmp = new File(plugin.getDataFolder(), "data.yml.tmp");
         try {
-            dataConfig.save(dataFile);
+            dataConfig.save(tmp);
+            try {
+                java.nio.file.Files.move(tmp.toPath(), dataFile.toPath(),
+                        java.nio.file.StandardCopyOption.REPLACE_EXISTING, java.nio.file.StandardCopyOption.ATOMIC_MOVE);
+            } catch (java.nio.file.AtomicMoveNotSupportedException e) {
+                java.nio.file.Files.move(tmp.toPath(), dataFile.toPath(), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+            }
         } catch (IOException e) {
             plugin.getLogger().severe("Failed to save tournament data to data.yml: " + e.getMessage());
         }
@@ -196,10 +235,37 @@ public class DataManager {
     }
 
     public void resetData() {
+        backup(); // keep a copy of the tournament before a full reset, just in case
         if (dataFile.exists()) {
             dataFile.delete();
         }
         dataConfig = new YamlConfiguration();
+        resetInProgress = true;
+        loadFailed = false;
         saveData();
+        resetInProgress = false;
+        hadTeamsOnLoad = false;
+    }
+
+    /** Copies data.yml into plugins/WillyMoneySMP/backups/ (keeps the newest 20). Runs on every start/reload and before a reset. */
+    private void backup() {
+        if (!dataFile.exists()) return;
+        try {
+            File dir = new File(plugin.getDataFolder(), "backups");
+            if (!dir.exists() && !dir.mkdirs()) return;
+            java.nio.file.Files.copy(dataFile.toPath(), new File(dir, "data-" + stamp() + ".yml").toPath(),
+                    java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+            File[] all = dir.listFiles((d, n) -> n.startsWith("data-") && n.endsWith(".yml"));
+            if (all != null && all.length > 20) {
+                java.util.Arrays.sort(all, java.util.Comparator.comparing(File::getName));
+                for (int k = 0; k < all.length - 20; k++) all[k].delete();
+            }
+        } catch (IOException e) {
+            plugin.getLogger().warning("Couldn't back up data.yml: " + e.getMessage());
+        }
+    }
+
+    private static String stamp() {
+        return new java.text.SimpleDateFormat("yyyy-MM-dd_HH-mm-ss").format(new java.util.Date());
     }
 }

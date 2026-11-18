@@ -123,27 +123,53 @@ public class MoneySMP extends JavaPlugin {
         long autoSaveTicks = Math.max(1, autoSaveMinutes) * 60L * 20L;
         Bukkit.getScheduler().runTaskTimer(this, () -> dataManager.saveData(), autoSaveTicks, autoSaveTicks);
 
+        // Carry on any bingo / capture points that were running before a /reload or restart.
+        loadEventState();
+        // After a /reload, players are already online: clean up leftover draft items and refresh their displays.
+        for (org.bukkit.entity.Player online : Bukkit.getOnlinePlayers()) {
+            try { draftManager.takeItems(online); } catch (Throwable ignored) {}
+        }
+        Bukkit.getScheduler().runTask(this, () -> { if (displayManager != null) displayManager.updateAllDisplays(); });
+
         getLogger().info("Willy Money SMP v3.3-SNAPSHOT loaded successfully with full persistence and tournament systems!");
     }
 
     @Override
     public void onDisable() {
-        if (webServerManager != null) {
-            webServerManager.stop();
-        }
-        if (dataManager != null) {
-            dataManager.saveData();
-        }
-        if (ffaManager != null) ffaManager.stop();
-        if (eventManager != null) {
-            eventManager.stopBingo(false);
-        }
-        if (capturePointManager != null) capturePointManager.stopDay(false);
-        if (draftManager != null) {
-            draftManager.cancelDraft();
-        }
+        // Reload-safe shutdown: every step is guarded so one problem can never stop the data from being saved.
+        safely("save running events", this::saveEventState);
+        safely("hide capture point bars", () -> { if (capturePointManager != null) capturePointManager.hideBars(); });
+        safely("stop Team Deathmatch", () -> { if (ffaManager != null) ffaManager.stop(); });
+        safely("cancel draft auction", () -> { if (draftManager != null) draftManager.cancelDraft(); });
+        safely("save data", () -> { if (dataManager != null) dataManager.saveData(); });
+        safely("stop web sync", () -> { if (webServerManager != null) webServerManager.stop(); });
         Bukkit.getScheduler().cancelTasks(this);
         getLogger().info("Willy Money SMP v3.3-SNAPSHOT disabled successfully and data saved!");
+    }
+
+    private void safely(String what, Runnable r) {
+        try { r.run(); } catch (Throwable t) { getLogger().warning("While shutting down, couldn't " + what + ": " + t); }
+    }
+
+    /** Running bingo + capture points are written to events-state.yml so /reload (or a restart) carries on. */
+    private void saveEventState() {
+        org.bukkit.configuration.file.YamlConfiguration y = new org.bukkit.configuration.file.YamlConfiguration();
+        if (eventManager != null) eventManager.saveState(y.createSection("bingo"));
+        if (capturePointManager != null) capturePointManager.saveState(y.createSection("capture"));
+        try {
+            y.save(new java.io.File(getDataFolder(), "events-state.yml"));
+        } catch (java.io.IOException e) {
+            getLogger().warning("Couldn't save events-state.yml: " + e.getMessage());
+        }
+    }
+
+    private void loadEventState() {
+        java.io.File f = new java.io.File(getDataFolder(), "events-state.yml");
+        if (!f.exists()) return;
+        org.bukkit.configuration.file.YamlConfiguration y = org.bukkit.configuration.file.YamlConfiguration.loadConfiguration(f);
+        safely("restore bingo", () -> eventManager.loadState(y.getConfigurationSection("bingo")));
+        safely("restore capture points", () -> capturePointManager.loadState(y.getConfigurationSection("capture")));
+        f.delete();
     }
 
     public DataManager getDataManager() { return dataManager; }
