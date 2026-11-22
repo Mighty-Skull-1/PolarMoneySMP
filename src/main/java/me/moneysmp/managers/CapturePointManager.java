@@ -352,6 +352,7 @@ public class CapturePointManager {
         if (l.contains("blue")) return Color.fromRGB(60, 120, 255);
         if (l.contains("green")) return Color.LIME;
         if (l.contains("yellow") || l.contains("gold")) return Color.YELLOW;
+        if (l.contains("pink")) return Color.fromRGB(255, 105, 180);
         if (l.contains("purple")) return Color.PURPLE;
         return Color.WHITE;
     }

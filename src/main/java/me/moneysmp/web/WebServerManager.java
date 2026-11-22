@@ -358,7 +358,7 @@ public class WebServerManager {
             if (!firstTeam) sb.append(",");
             firstTeam = false;
             sb.append("[").append(str(team.getName())).append(",")
-              .append(str(hexFor(team.getColorCode()))).append(",")
+              .append(str(hexFor(team.getName(), team.getColorCode()))).append(",")
               .append(bingoClaims.getOrDefault(team, 0)).append(",[");
 
             List<UUID> members = new ArrayList<>(team.getMembers());
@@ -487,6 +487,12 @@ public class WebServerManager {
         OfflinePlayer op = Bukkit.getOfflinePlayer(uuid);
         String name = op.getName();
         return name != null ? name : uuid.toString().substring(0, 8);
+    }
+
+    /** Website colour for a team: pink gets its own colour, everything else goes by the chat colour code. */
+    private static String hexFor(String teamName, String colorCode) {
+        if (teamName != null && teamName.toLowerCase().contains("pink")) return "#ec4899";
+        return hexFor(colorCode);
     }
 
     private static String hexFor(String colorCode) {

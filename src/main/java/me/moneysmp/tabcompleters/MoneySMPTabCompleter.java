@@ -139,7 +139,7 @@ public class MoneySMPTabCompleter implements TabCompleter {
                     candidates.add(team.getName());
                 }
             } else if (args.length == 2 && args[0].equalsIgnoreCase("create")) {
-                candidates.addAll(Arrays.asList("TeamRed", "TeamYellow", "TeamBlue", "TeamPurple", "TeamGreen"));
+                candidates.addAll(Arrays.asList("TeamRed", "TeamBlue", "TeamGreen", "TeamPink"));
             } else if (args.length == 3 && args[0].equalsIgnoreCase("create")) {
                 for (Player player : Bukkit.getOnlinePlayers()) {
                     if (teamManager.getTeamByPlayer(player.getUniqueId()) == null) {

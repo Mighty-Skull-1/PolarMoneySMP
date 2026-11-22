@@ -182,7 +182,7 @@ public class DisplayManager {
         if (lower.contains("blue")) return NamedTextColor.BLUE;
         if (lower.contains("yellow")) return NamedTextColor.YELLOW;
         if (lower.contains("green")) return NamedTextColor.GREEN;
-        if (lower.contains("purple")) return NamedTextColor.LIGHT_PURPLE;
+        if (lower.contains("pink") || lower.contains("purple")) return NamedTextColor.LIGHT_PURPLE;
         if (lower.contains("gold") || lower.contains("orange")) return NamedTextColor.GOLD;
         if (lower.contains("aqua") || lower.contains("cyan")) return NamedTextColor.AQUA;
         return NamedTextColor.WHITE;

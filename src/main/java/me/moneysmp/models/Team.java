@@ -33,7 +33,7 @@ public class Team {
         if (lower.contains("red")) return "§c";
         if (lower.contains("yellow")) return "§e";
         if (lower.contains("green")) return "§a";
-        if (lower.contains("purple")) return "§d";
+        if (lower.contains("pink") || lower.contains("purple")) return "§d";
         if (lower.contains("gold") || lower.contains("orange")) return "§6";
         if (lower.contains("aqua") || lower.contains("cyan")) return "§b";
         return "§f";
@@ -45,6 +45,7 @@ public class Team {
         if (lower.contains("red")) return Material.RED_WOOL;
         if (lower.contains("yellow")) return Material.YELLOW_WOOL;
         if (lower.contains("green")) return Material.LIME_WOOL;
+        if (lower.contains("pink")) return Material.PINK_WOOL;
         if (lower.contains("purple")) return Material.PURPLE_WOOL;
         if (lower.contains("gold") || lower.contains("orange")) return Material.ORANGE_WOOL;
         if (lower.contains("aqua") || lower.contains("cyan")) return Material.CYAN_WOOL;
