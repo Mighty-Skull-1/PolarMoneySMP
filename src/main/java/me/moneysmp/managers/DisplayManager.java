@@ -159,7 +159,7 @@ public class DisplayManager {
 
             Set<String> names = new HashSet<>();
             for (UUID memberUuid : team.getMembers()) {
-                String name = Bukkit.getOfflinePlayer(memberUuid).getName();
+                String name = me.moneysmp.util.PlayerNames.get(memberUuid);
                 if (name != null) names.add(name);
             }
             for (String entry : new HashSet<>(sbTeam.getEntries())) {

@@ -232,12 +232,12 @@ After running tests, you can completely reset everything to the beginning:
 | `/banneditems remove <material>` | `/banneditems unban` | Remove an item from the ban list. |
 | `/banneditems hand [reason]` | — | Ban the item currently held in your main hand. |
 | `/banneditems list` | — | List all banned items and reasons in chat. |
-| `/tier set <player> <A\|B\|C\|CAPTAIN>` | — | Assign a player's tier. |
+| `/tier set <player> <A|B|C|D>` | — | Assign a player's tier. Works for players who are offline or have never joined. |
 | `/tier remove <player>` | — | Remove a player's assigned tier. |
 | `/team create <name> <captain>` | — | Create a team with a captain. |
 | `/team remove <player>` | — | Remove a player from their team. |
 | `/team disband <team>` | — | Disband an entire team. |
-| `/bid nominate <player>` | — | Put a player up for auction (captains get bid items, you get SOLD/CANCEL). |
+| `/bid nominate <player>` | — | Put a player up for auction (captains get bid items, you get SOLD/CANCEL). Works for offline players and players who have never joined - they're on their team when they first log in. |
 | `/bid cancel` | — | Cancel the active auction. |
 | `/bid sold` | — | Sell the player to the top bidder (same as the SOLD item). |
 | `/fine <player\|team> <amount> <reason>` | — | Fine a player or team (comes out of the team's money, player first). Also `/fine history`, `/fine undo`. Logged to fines.yml. |
@@ -246,7 +246,7 @@ After running tests, you can completely reset everything to the beginning:
 | `/credits take <player> <amt> [game\|draft]` | — | Deduct credits from a player. |
 | `/credits set <player> <amt> [game\|draft]` | — | Set a player's credit balance. |
 | `/credits balance <player>` | — | Check credit balances of a player. |
-| `/team sub <old> <new>` | — | Sub a player out (works while they're offline). The new player gets their team, tier, credits, kills and deaths (and captain + purse if they were captain). Saves instantly. |
+| `/team sub <old> <new>` | — | Sub a player out (works while they're offline, and the new player can be someone who has never joined). The new player gets their team, tier, credits, kills and deaths (and captain + purse if they were captain). Saves instantly. |
 | `/ffa start` | — | Team Deathmatch: last team standing wins, bounty tier glows (also `status`, `out <player>`, `end`, `stop`). |
 | `/freefall start [minutes] [size]` | — | Finale: shrink the world border (also `center`, `status`, `stop`, `end`, `reset`). |
 | `/bingo start` / `/bingo stop` | — | Start or stop the Lockout Bingo event. |
@@ -265,5 +265,6 @@ The plugin pushes the standings, draft auction and draft pool to the website
 - If the key file is missing the plugin creates a new one and prints its public key in the console;
   copy it into the website's `SIGNING_PUBLIC_KEY` (or upload the key file that matches the site).
 - `/smp sync` pushes an update immediately, `/smp webkey` shows the public key.
+- `/smp version` shows which plugin version the server is running (see CHANGELOG.md).
 - `/smp setip <address>` changes the server address shown on the website (saved as `server-address` in `config.yml`).
 - Settings live under `web-sync:` in `config.yml` (`ntfy-topic` must match `NTFY_TOPIC` on the website).

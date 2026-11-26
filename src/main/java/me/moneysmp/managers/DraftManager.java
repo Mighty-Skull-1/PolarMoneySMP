@@ -87,17 +87,19 @@ public class DraftManager {
     }
 
     // ---------------------------------------------------------------- auction flow
-    public boolean startNomination(Player target, Player admin) {
-        if (isDraftActive() || target == null) return false;
-        nomineeUuid = target.getUniqueId();
-        nomineeName = target.getName();
+    /** Starts an auction. The player can be online, offline, or someone who has never joined (by UUID). */
+    public boolean startNomination(UUID targetId, String targetName, Player admin) {
+        if (isDraftActive() || targetId == null) return false;
+        nomineeUuid = targetId;
+        nomineeName = targetName != null ? targetName : me.moneysmp.util.PlayerNames.getOrShort(targetId);
+        me.moneysmp.util.PlayerNames.remember(nomineeUuid, nomineeName);
         highestBidderId = null;
         highestBidderName = null;
         highestBid = 0;
         bidIncrement = Math.max(1, plugin.getConfig().getInt("draft.bid-increment", 5));
         auctioneer = admin != null ? admin.getUniqueId() : null;
 
-        PlayerTier tier = tierManager.getTier(target.getUniqueId());
+        PlayerTier tier = tierManager.getTier(targetId);
         Bukkit.broadcastMessage("§6§l[DRAFT] §e" + nomineeName + " §7(" + tier.getPrefix() + "§7) is up for auction!");
         Bukkit.broadcastMessage("§7Captains: §eright-click the bid items in your hotbar §7to bid. No timer - the auctioneer calls SOLD.");
 
@@ -154,6 +156,11 @@ public class DraftManager {
                 for (Player p : Bukkit.getOnlinePlayers()) p.playSound(p.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1f, 1f);
                 recentPicks.addFirst(new String[]{nomineeName, team.getName(), String.valueOf(highestBid)});
                 while (recentPicks.size() > MAX_RECENT_PICKS) recentPicks.removeLast();
+                me.moneysmp.util.PlayerNames.remember(nomineeUuid, nomineeName);
+                Player soldOnline = Bukkit.getPlayer(nomineeUuid);
+                if (soldOnline != null) soldOnline.sendMessage("§aYou were drafted onto " + team.getColorCode() + team.getName() + "§a!");
+                // Save straight away: the player may not have joined yet, so nothing else would save them.
+                if (plugin instanceof me.moneysmp.MoneySMP smp && smp.getDataManager() != null) smp.getDataManager().saveData();
             } else {
                 Bukkit.broadcastMessage("§c[DRAFT ERROR] The winning captain's team was not found - " + nomineeName + " stays unassigned.");
             }

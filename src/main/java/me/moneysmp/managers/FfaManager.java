@@ -101,10 +101,9 @@ public class FfaManager {
     public void knockOut(UUID uuid, String reason) {
         if (!active || !alive.remove(uuid)) return;
         knockedOut.add(uuid);
-        OfflinePlayer op = Bukkit.getOfflinePlayer(uuid);
         Team team = teamManager.getTeamByPlayer(uuid);
         String tName = team != null ? team.getColorCode() + team.getName() : "§7No Team";
-        Bukkit.broadcastMessage("§c[TDM] §e" + op.getName() + " §7(" + tName + "§7) is out of the deathmatch" + (reason != null ? " §8(" + reason + ")" : "") + "§7.");
+        Bukkit.broadcastMessage("§c[TDM] §e" + me.moneysmp.util.PlayerNames.getOrShort(uuid) + " §7(" + tName + "§7) is out of the deathmatch" + (reason != null ? " §8(" + reason + ")" : "") + "§7.");
         if (team != null) checkTeam(team);
     }
 
@@ -279,7 +278,7 @@ public class FfaManager {
             Team team = teamManager.getTeamByName(t);
             if (team == null) continue;
             List<String> names = new ArrayList<>();
-            for (UUID id : team.getMembers()) if (alive.contains(id)) names.add(Bukkit.getOfflinePlayer(id).getName());
+            for (UUID id : team.getMembers()) if (alive.contains(id)) names.add(me.moneysmp.util.PlayerNames.get(id));
             s.sendMessage("  " + team.getColorCode() + team.getName() + " §7(" + names.size() + "): §f" + String.join(", ", names));
         }
         if (!outOrder.isEmpty()) {

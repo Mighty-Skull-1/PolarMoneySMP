@@ -148,6 +148,16 @@ public class DataManager {
         loadIntMap("kills", (uuid, value) -> statsManager.setKills(uuid, value));
         loadIntMap("deaths", (uuid, value) -> statsManager.setDeaths(uuid, value));
 
+        // Load saved player names (players drafted before they ever joined)
+        ConfigurationSection namesSec = dataConfig.getConfigurationSection("names");
+        if (namesSec != null) {
+            for (String key : namesSec.getKeys(false)) {
+                try {
+                    me.moneysmp.util.PlayerNames.remember(UUID.fromString(key), namesSec.getString(key));
+                } catch (Exception ignored) {}
+            }
+        }
+
         hadTeamsOnLoad = !teamManager.getTeams().isEmpty();
         plugin.getLogger().info("Tournament data loaded successfully from data.yml (" + teamManager.getTeams().size() + " teams)");
     }
@@ -207,6 +217,11 @@ public class DataManager {
         }
         for (Map.Entry<UUID, Integer> entry : statsManager.getAllDeaths().entrySet()) {
             dataConfig.set("deaths." + entry.getKey().toString(), entry.getValue());
+        }
+
+        // Save player names (so players who have never joined still show by name)
+        for (Map.Entry<UUID, String> entry : me.moneysmp.util.PlayerNames.all().entrySet()) {
+            dataConfig.set("names." + entry.getKey().toString(), entry.getValue());
         }
 
         // Write to a temp file, then swap it in: a crash or reload mid-save can never leave a half-written data.yml.

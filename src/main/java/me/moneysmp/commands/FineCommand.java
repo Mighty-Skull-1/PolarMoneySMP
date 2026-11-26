@@ -64,7 +64,7 @@ public class FineCommand implements CommandExecutor {
             playerId = findMember(args[0]);
             if (playerId == null) { sender.sendMessage("§c" + args[0] + " isn't a team or a player on a team."); return true; }
             team = teamManager.getTeamByPlayer(playerId);
-            String n = Bukkit.getOfflinePlayer(playerId).getName();
+            String n = me.moneysmp.util.PlayerNames.get(playerId);
             targetName = n != null ? n : args[0];
         }
 
@@ -108,7 +108,7 @@ public class FineCommand implements CommandExecutor {
         if (online != null && teamManager.getTeamByPlayer(online.getUniqueId()) != null) return online.getUniqueId();
         for (Team t : teamManager.getTeams()) {
             for (UUID m : t.getMembers()) {
-                String n = Bukkit.getOfflinePlayer(m).getName();
+                String n = me.moneysmp.util.PlayerNames.get(m);
                 if (n != null && n.equalsIgnoreCase(name)) return m;
             }
         }

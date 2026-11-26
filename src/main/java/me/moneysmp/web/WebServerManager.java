@@ -484,9 +484,8 @@ public class WebServerManager {
     }
 
     private static String nameOf(UUID uuid) {
-        OfflinePlayer op = Bukkit.getOfflinePlayer(uuid);
-        String name = op.getName();
-        return name != null ? name : uuid.toString().substring(0, 8);
+        // Saved names cover players who were drafted before they ever joined.
+        return me.moneysmp.util.PlayerNames.getOrShort(uuid);
     }
 
     /** Website colour for a team: pink gets its own colour, everything else goes by the chat colour code. */

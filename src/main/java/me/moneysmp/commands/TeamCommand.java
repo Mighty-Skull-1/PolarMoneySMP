@@ -54,10 +54,17 @@ public class TeamCommand implements CommandExecutor {
             sender.sendMessage("§6§m--------------------------------------------------");
             for (Team team : teams) {
                 Player cap = Bukkit.getPlayer(team.getCaptain());
-                String capName = (cap != null) ? cap.getName() : "Offline";
+                String capName = (cap != null) ? cap.getName() : me.moneysmp.util.PlayerNames.getOrShort(team.getCaptain()) + " §7(offline)";
                 sender.sendMessage(team.getColorCode() + "• " + team.getName() +
                         " §8| §fCaptain: §e" + capName +
                         " §8| §fMembers: §a" + team.getMembers().size());
+                StringBuilder roster = new StringBuilder();
+                for (UUID m : team.getMembers()) {
+                    if (m.equals(team.getCaptain())) continue;
+                    if (roster.length() > 0) roster.append("§7, ");
+                    roster.append(Bukkit.getPlayer(m) != null ? "§a" : "§7").append(me.moneysmp.util.PlayerNames.getOrShort(m));
+                }
+                if (roster.length() > 0) sender.sendMessage("   §8» " + roster);
             }
             sender.sendMessage("§6§m--------------------------------------------------");
             return true;
@@ -78,7 +85,7 @@ public class TeamCommand implements CommandExecutor {
             }
 
             Player capPlayer = Bukkit.getPlayer(targetTeam.getCaptain());
-            String capName = (capPlayer != null) ? "§a" + capPlayer.getName() : "§7Offline (" + targetTeam.getCaptain().toString().substring(0, 8) + ")";
+            String capName = (capPlayer != null) ? "§a" + capPlayer.getName() : "§7" + me.moneysmp.util.PlayerNames.getOrShort(targetTeam.getCaptain()) + " (offline)";
             int draftPurse = creditManager.getDraftCredits(targetTeam.getCaptain());
             int maxDraft = plugin != null ? plugin.getConfig().getInt("starting-draft-credits", 300) : 300;
 
@@ -90,7 +97,7 @@ public class TeamCommand implements CommandExecutor {
 
             for (UUID mUuid : targetTeam.getMembers()) {
                 Player mPlayer = Bukkit.getPlayer(mUuid);
-                String mName = (mPlayer != null) ? "§a" + mPlayer.getName() : "§7" + Bukkit.getOfflinePlayer(mUuid).getName();
+                String mName = (mPlayer != null) ? "§a" + mPlayer.getName() : "§7" + me.moneysmp.util.PlayerNames.getOrShort(mUuid);
                 PlayerTier tier = tierManager.getTier(mUuid);
                 String elimStatus = (eliminationManager != null && eliminationManager.isEliminated(mUuid)) ? " §c[ELIMINATED]" : "";
                 sender.sendMessage(" §8- " + tier.getPrefix(targetTeam.getColorCode()) + " " + mName + elimStatus + " §7(" + creditManager.getGameCredits(mUuid) + " Credits)");
@@ -189,12 +196,8 @@ public class TeamCommand implements CommandExecutor {
             Player online = Bukkit.getPlayerExact(args[1]);
             if (online != null) { targetId = online.getUniqueId(); targetName = online.getName(); }
             else {
-                for (Team t : teamManager.getTeams()) {
-                    for (UUID m : t.getMembers()) {
-                        String n = Bukkit.getOfflinePlayer(m).getName();
-                        if (n != null && n.equalsIgnoreCase(args[1])) { targetId = m; targetName = n; }
-                    }
-                }
+                targetId = findMember(args[1]);
+                if (targetId != null) targetName = me.moneysmp.util.PlayerNames.getOrShort(targetId);
             }
             if (targetId == null) {
                 sender.sendMessage("§c" + args[1] + " isn't on any team. Check the spelling with /team info <team>.");
@@ -264,36 +267,36 @@ public class TeamCommand implements CommandExecutor {
             return;
         }
 
-        // Old player: look them up among team members by name, so it works when they're offline.
-        UUID oldId = null;
-        String oldName = args[1];
-        for (Team t : teamManager.getTeams()) {
-            for (UUID m : t.getMembers()) {
-                String n = Bukkit.getOfflinePlayer(m).getName();
-                if (n != null && n.equalsIgnoreCase(args[1])) { oldId = m; oldName = n; }
-            }
-        }
-        if (oldId == null) {
+        if (findMember(args[1]) == null) {
             sender.sendMessage("§c" + args[1] + " isn't on any team. Check the spelling with /team info <team>.");
             return;
         }
+        // New player: online, offline or never joined (Mojang lookup runs off the main thread).
+        me.moneysmp.util.PlayerLookup.resolve(plugin, args[2], result -> {
+            if (!result.found()) { sender.sendMessage(me.moneysmp.util.PlayerLookup.failMessage(result, args[2])); return; }
+            doSubstitute(sender, args[1], result.uuid(), result.name() != null ? result.name() : args[2]);
+        });
+    }
 
-        // New player: must be online, or have joined this server before (so we know their real UUID).
-        UUID newId;
-        String newName;
-        Player onlineNew = Bukkit.getPlayerExact(args[2]);
-        if (onlineNew != null) {
-            newId = onlineNew.getUniqueId();
-            newName = onlineNew.getName();
-        } else {
-            org.bukkit.OfflinePlayer cached = Bukkit.getOfflinePlayerIfCached(args[2]);
-            if (cached == null || !cached.hasPlayedBefore()) {
-                sender.sendMessage("§c" + args[2] + " has never joined this server. Get them to log in once (or be online), then run this again.");
-                return;
+    /** Finds a team member by name (works for offline and never-joined players). */
+    private UUID findMember(String name) {
+        for (Team t : teamManager.getTeams()) {
+            for (UUID m : t.getMembers()) {
+                String n = me.moneysmp.util.PlayerNames.get(m);
+                if (n != null && n.equalsIgnoreCase(name)) return m;
             }
-            newId = cached.getUniqueId();
-            newName = cached.getName() != null ? cached.getName() : args[2];
         }
+        return null;
+    }
+
+    private void doSubstitute(CommandSender sender, String oldInput, UUID newId, String newName) {
+        // Look the old player up again: things may have changed while we were asking Mojang.
+        UUID oldId = findMember(oldInput);
+        if (oldId == null) {
+            sender.sendMessage("§c" + oldInput + " isn't on any team any more.");
+            return;
+        }
+        String oldName = me.moneysmp.util.PlayerNames.getOrShort(oldId);
 
         if (newId.equals(oldId)) { sender.sendMessage("§cThat's the same player."); return; }
         Team newCurrent = teamManager.getTeamByPlayer(newId);

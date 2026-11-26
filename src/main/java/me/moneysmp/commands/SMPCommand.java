@@ -29,6 +29,13 @@ public class SMPCommand implements CommandExecutor {
 
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+        // /smp version - shows which plugin version the server is running.
+        if (args.length >= 1 && (args[0].equalsIgnoreCase("version") || args[0].equalsIgnoreCase("ver"))) {
+            sender.sendMessage("§6§l[Willy Money SMP] §eRunning version §f" + plugin.getPluginMeta().getVersion()
+                    + " §7(see CHANGELOG.md for what changed)");
+            return true;
+        }
+
         if (!sender.hasPermission("moneysmp.admin")) {
             sender.sendMessage("§cAdmin only!");
             return true;

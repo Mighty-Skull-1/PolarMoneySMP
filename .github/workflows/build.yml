@@ -24,7 +24,7 @@ jobs:
         run: mvn -B -q package
 
       - name: Rename jar
-        run: cp target/MoneySMP-*.jar WillyMoneySMP.jar
+        run: cp target/WillyMoneySMP-*.jar WillyMoneySMP.jar
 
       # Always replaces the "latest" release, so the newest jar is at:
       # https://github.com/Mighty-Skull-1/WillyMoneySMP/releases/latest/download/WillyMoneySMP.jar

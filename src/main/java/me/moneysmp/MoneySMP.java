@@ -71,10 +71,10 @@ public class MoneySMP extends JavaPlugin {
         getCommand("team").setExecutor(new TeamCommand(this, teamManager, creditManager, tierManager, eliminationManager));
         getCommand("team").setTabCompleter(tabCompleter);
 
-        getCommand("tier").setExecutor(new TierCommand(tierManager));
+        getCommand("tier").setExecutor(new TierCommand(this, tierManager));
         getCommand("tier").setTabCompleter(tabCompleter);
 
-        getCommand("bid").setExecutor(new BidCommand(teamManager, creditManager, tierManager, draftManager));
+        getCommand("bid").setExecutor(new BidCommand(this, teamManager, creditManager, tierManager, draftManager));
         getCommand("bid").setTabCompleter(tabCompleter);
 
         getCommand("tc").setExecutor(new TeamChatCommand(teamManager));
@@ -133,7 +133,7 @@ public class MoneySMP extends JavaPlugin {
         }
         Bukkit.getScheduler().runTask(this, () -> { if (displayManager != null) displayManager.updateAllDisplays(); });
 
-        getLogger().info("Willy Money SMP v3.3-SNAPSHOT loaded successfully with full persistence and tournament systems!");
+        getLogger().info("Willy Money SMP v" + getPluginMeta().getVersion() + " loaded successfully with full persistence and tournament systems!");
     }
 
     @Override
@@ -146,7 +146,7 @@ public class MoneySMP extends JavaPlugin {
         safely("save data", () -> { if (dataManager != null) dataManager.saveData(); });
         safely("stop web sync", () -> { if (webServerManager != null) webServerManager.stop(); });
         Bukkit.getScheduler().cancelTasks(this);
-        getLogger().info("Willy Money SMP v3.3-SNAPSHOT disabled successfully and data saved!");
+        getLogger().info("Willy Money SMP v" + getPluginMeta().getVersion() + " disabled successfully and data saved!");
     }
 
     private void safely(String what, Runnable r) {
@@ -182,6 +182,7 @@ public class MoneySMP extends JavaPlugin {
     public SMPGuiManager getSmpGuiManager() { return smpGuiManager; }
     public BannedItemManager getBannedItemManager() { return bannedItemManager; }
     public StatsManager getStatsManager() { return statsManager; }
+    public DisplayManager getDisplayManager() { return displayManager; }
 
     public void resetTournament(CommandSender sender) {
         // 1. Stop any ongoing draft auction or events

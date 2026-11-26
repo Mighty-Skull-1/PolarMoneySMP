@@ -145,6 +145,28 @@ public class KillEventListener implements Listener {
     @EventHandler
     public void onPlayerJoin(org.bukkit.event.player.PlayerJoinEvent event) {
         Player player = event.getPlayer();
+
+        // Players drafted / tiered / subbed in before they ever joined are already on their team by UUID.
+        // Save their real name (also catches name changes) and show their team, tier and colour right away.
+        UUID id = player.getUniqueId();
+        Team team = teamManager.getTeamByPlayer(id);
+        boolean tracked = team != null || tierManager.getTier(id) != PlayerTier.NONE;
+        boolean nameChanged = me.moneysmp.util.PlayerNames.remember(id, player.getName());
+        if (plugin instanceof me.moneysmp.MoneySMP smpJoin) {
+            if (tracked && nameChanged && smpJoin.getDataManager() != null) smpJoin.getDataManager().saveData();
+            if (tracked && nameChanged && smpJoin.getWebServerManager() != null) smpJoin.getWebServerManager().requestPush();
+            Bukkit.getScheduler().runTask(plugin, () -> {
+                if (player.isOnline() && smpJoin.getDisplayManager() != null) smpJoin.getDisplayManager().updateAllDisplays();
+            });
+        }
+        if (team != null && !player.hasPlayedBefore()) {
+            Bukkit.getScheduler().runTaskLater(plugin, () -> {
+                if (!player.isOnline()) return;
+                player.sendMessage("§6§l[Willy Money SMP] §eWelcome! You're on " + team.getColorCode() + "§l" + team.getName()
+                        + "§e as " + tierManager.getTier(id).getPrefix(team.getColorCode()) + "§e. Use §f/team info §eto see your team.");
+            }, 40L);
+        }
+
         if (eliminationManager != null && eliminationManager.isEliminated(player.getUniqueId())
                 && player.getGameMode() != GameMode.SPECTATOR) {
             Bukkit.getScheduler().runTask(plugin, () -> player.setGameMode(GameMode.SPECTATOR));

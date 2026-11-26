@@ -10,6 +10,10 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.java.JavaPlugin;
+import me.moneysmp.util.PlayerLookup;
+
+import java.util.UUID;
 
 /**
  * /bid nominate <player>  - admin starts an auction (captains get bid items, admin gets SOLD/CANCEL items)
@@ -22,8 +26,10 @@ public class BidCommand implements CommandExecutor {
     private final CreditManager creditManager;
     private final TierManager tierManager;
     private final DraftManager draftManager;
+    private final JavaPlugin plugin;
 
-    public BidCommand(TeamManager teamManager, CreditManager creditManager, TierManager tierManager, DraftManager draftManager) {
+    public BidCommand(JavaPlugin plugin, TeamManager teamManager, CreditManager creditManager, TierManager tierManager, DraftManager draftManager) {
+        this.plugin = plugin;
         this.teamManager = teamManager;
         this.creditManager = creditManager;
         this.tierManager = tierManager;
@@ -52,22 +58,15 @@ public class BidCommand implements CommandExecutor {
             }
             case "nominate" -> {
                 if (args.length < 2) { sender.sendMessage("§cUsage: /bid nominate <player>"); return true; }
-                Player target = Bukkit.getPlayer(args[1]);
-                if (target == null) { sender.sendMessage("§cThat player isn't online!"); return true; }
-                if (teamManager.getTeamByPlayer(target.getUniqueId()) != null) {
-                    sender.sendMessage("§c" + target.getName() + " is already on a team!");
-                    return true;
-                }
-                PlayerTier tier = tierManager.getTier(target.getUniqueId());
-                if (tier == PlayerTier.NONE || tier == PlayerTier.CAPTAIN) {
-                    sender.sendMessage("§cThat player isn't in a draftable tier (A, B, C, D)! Use /tier set first.");
-                    return true;
-                }
-                if (!draftManager.startNomination(target, sender instanceof Player p ? p : null)) {
+                if (draftManager.isDraftActive()) {
                     sender.sendMessage("§cAn auction is already running! Sell or cancel it first.");
-                } else if (sender instanceof Player) {
-                    sender.sendMessage("§7You have the §aSOLD §7and §cCANCEL §7items in your hotbar (or use /bid sold).");
+                    return true;
                 }
+                // Works for online, offline and never-joined players (Mojang lookup runs off the main thread).
+                PlayerLookup.resolve(plugin, args[1], result -> {
+                    if (!result.found()) { sender.sendMessage(PlayerLookup.failMessage(result, args[1])); return; }
+                    nominate(sender, result.uuid(), result.name() != null ? result.name() : args[1]);
+                });
                 return true;
             }
             default -> {
@@ -76,6 +75,30 @@ public class BidCommand implements CommandExecutor {
                 if (err != null) captain.sendMessage("§c[Draft] " + err);
                 return true;
             }
+        }
+    }
+
+    private void nominate(CommandSender sender, UUID targetId, String targetName) {
+        if (teamManager.getTeamByPlayer(targetId) != null) {
+            sender.sendMessage("§c" + targetName + " is already on a team!");
+            return;
+        }
+        PlayerTier tier = tierManager.getTier(targetId);
+        if (tier == PlayerTier.NONE || tier == PlayerTier.CAPTAIN) {
+            sender.sendMessage("§c" + targetName + " isn't in a draftable tier (A, B, C, D)! Use /tier set " + targetName + " <tier> first.");
+            return;
+        }
+        Player admin = sender instanceof Player p && p.isOnline() ? p : null;
+        if (!draftManager.startNomination(targetId, targetName, admin)) {
+            sender.sendMessage("§cAn auction is already running! Sell or cancel it first.");
+            return;
+        }
+        if (Bukkit.getPlayer(targetId) == null) {
+            sender.sendMessage("§7" + targetName + " isn't online" + (Bukkit.getOfflinePlayer(targetId).hasPlayedBefore() ? "" : " and has never joined")
+                    + " - that's fine, they'll be on their team when they log in.");
+        }
+        if (admin != null) {
+            sender.sendMessage("§7You have the §aSOLD §7and §cCANCEL §7items in your hotbar (or use /bid sold).");
         }
     }
 }

@@ -41,7 +41,7 @@ public class MoneySMPTabCompleter implements TabCompleter {
 
         if (command.getName().equalsIgnoreCase("smp")) {
             if (args.length == 1) {
-                candidates.addAll(Arrays.asList("gui", "phase", "reload", "reset", "save", "sync", "webkey", "setip"));
+                candidates.addAll(Arrays.asList("gui", "phase", "reload", "reset", "save", "sync", "webkey", "setip", "version"));
             } else if (args.length == 2 && args[0].equalsIgnoreCase("phase")) {
                 candidates.addAll(Arrays.asList("draft", "grace", "pvp", "finale"));
             } else if (args.length == 2 && args[0].equalsIgnoreCase("reset")) {
@@ -57,7 +57,7 @@ public class MoneySMPTabCompleter implements TabCompleter {
                 for (Team team : teamManager.getTeams()) {
                     candidates.add(team.getName());
                     for (java.util.UUID m : team.getMembers()) {
-                        String n = Bukkit.getOfflinePlayer(m).getName();
+                        String n = me.moneysmp.util.PlayerNames.get(m);
                         if (n != null) candidates.add(n);
                     }
                 }
@@ -98,11 +98,13 @@ public class MoneySMPTabCompleter implements TabCompleter {
                     candidates.add(String.valueOf(draftManager.getNextBid()));
                 }
             } else if (args.length == 2 && args[0].equalsIgnoreCase("nominate") && sender.hasPermission("moneysmp.admin")) {
-                for (Player player : Bukkit.getOnlinePlayers()) {
-                    PlayerTier tier = tierManager.getTier(player.getUniqueId());
+                // Everyone with a draftable tier and no team, online or not (includes never-joined players).
+                for (java.util.Map.Entry<java.util.UUID, PlayerTier> e : tierManager.getAllTiers().entrySet()) {
+                    PlayerTier tier = e.getValue();
                     if (tier == PlayerTier.A || tier == PlayerTier.B || tier == PlayerTier.C || tier == PlayerTier.D) {
-                        if (teamManager.getTeamByPlayer(player.getUniqueId()) == null) {
-                            candidates.add(player.getName());
+                        if (teamManager.getTeamByPlayer(e.getKey()) == null) {
+                            String n = me.moneysmp.util.PlayerNames.get(e.getKey());
+                            if (n != null) candidates.add(n);
                         }
                     }
                 }
@@ -126,7 +128,7 @@ public class MoneySMPTabCompleter implements TabCompleter {
             } else if (args.length == 2 && args[0].equalsIgnoreCase("sub")) {
                 for (Team team : teamManager.getTeams()) {
                     for (java.util.UUID m : team.getMembers()) {
-                        String n = Bukkit.getOfflinePlayer(m).getName();
+                        String n = me.moneysmp.util.PlayerNames.get(m);
                         if (n != null) candidates.add(n);
                     }
                 }
@@ -149,7 +151,7 @@ public class MoneySMPTabCompleter implements TabCompleter {
             } else if (args.length == 2 && args[0].equalsIgnoreCase("remove")) {
                 for (Team team : teamManager.getTeams()) {
                     for (java.util.UUID m : team.getMembers()) {
-                        String n = Bukkit.getOfflinePlayer(m).getName();
+                        String n = me.moneysmp.util.PlayerNames.get(m);
                         if (n != null) candidates.add(n);
                     }
                 }
