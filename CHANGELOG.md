@@ -6,9 +6,16 @@ Version numbers are **big.medium.small** (for example 3.4.0):
 - **New feature**: the middle number goes up and the last goes back to 0 (3.4.1 → 3.5.0).
 - **Big change** that could break things or change saved data: the first number goes up and the others go to 0 (3.5.0 → 4.0.0).
 
-Check which version a server is running with `/smp version` (it's also shown in the console when the plugin starts, and in the jar name, e.g. `WillyMoneySMP-3.4.0.jar`).
+Check which version a server is running with `/smp version` (it's also shown in the console when the plugin starts, and in the jar name, e.g. `PolarMoneySMP-3.5.1.jar`).
 
 ---
+
+## 3.5.1 (2026-11-26)
+
+- The jar is now called `PolarMoneySMP-<version>.jar` (for example `PolarMoneySMP-3.5.1.jar`), to match the GitHub repo's new name.
+- The GitHub download is now `PolarMoneySMP.jar`. `WillyMoneySMP.jar` is still there as the same file, so old links keep working.
+- When updating a server, delete the old `WillyMoneySMP-...jar` from the plugins folder first, so you don't have two copies.
+- Nothing else changed: the plugin is still called WillyMoneySMP in game, and its data folder and `data.yml` stay where they are.
 
 ## 3.5.0 (2026-11-26)
 

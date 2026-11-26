@@ -23,16 +23,21 @@ jobs:
       - name: Build jar
         run: mvn -B -q package
 
+      # PolarMoneySMP.jar is the main download. WillyMoneySMP.jar is the same file, kept so old links still work.
       - name: Rename jar
-        run: cp target/WillyMoneySMP-*.jar WillyMoneySMP.jar
+        run: |
+          cp target/PolarMoneySMP-*.jar PolarMoneySMP.jar
+          cp target/PolarMoneySMP-*.jar WillyMoneySMP.jar
 
       # Always replaces the "latest" release, so the newest jar is at:
-      # https://github.com/Mighty-Skull-1/WillyMoneySMP/releases/latest/download/WillyMoneySMP.jar
+      # https://github.com/Mighty-Skull-1/PolarMoneySMP/releases/latest/download/PolarMoneySMP.jar
       - name: Publish latest build
         uses: softprops/action-gh-release@v2
         with:
           tag_name: latest
           name: Latest build
-          body: "Built from ${{ github.sha }}. Download WillyMoneySMP.jar and put it in the server's plugins folder."
+          body: "Built from ${{ github.sha }}. Download PolarMoneySMP.jar and put it in the server's plugins folder (WillyMoneySMP.jar is the same file, for old links). Remove any older WillyMoneySMP or PolarMoneySMP jar first."
           make_latest: true
-          files: WillyMoneySMP.jar
+          files: |
+            PolarMoneySMP.jar
+            WillyMoneySMP.jar
