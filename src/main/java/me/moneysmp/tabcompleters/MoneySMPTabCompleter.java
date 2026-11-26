@@ -109,6 +109,15 @@ public class MoneySMPTabCompleter implements TabCompleter {
                     }
                 }
             }
+        } else if (command.getName().equalsIgnoreCase("rank")) {
+            if (!me.moneysmp.commands.RankCommand.canUse(sender)) return new ArrayList<>();
+            if (args.length == 1) {
+                candidates.addAll(Arrays.asList("set", "list"));
+            } else if (args.length == 2 && args[0].equalsIgnoreCase("set")) {
+                for (Player player : Bukkit.getOnlinePlayers()) candidates.add(player.getName());
+            } else if (args.length == 3 && args[0].equalsIgnoreCase("set")) {
+                candidates.addAll(Arrays.asList("owner", "admin", "none"));
+            }
         } else if (command.getName().equalsIgnoreCase("tier")) {
             if (args.length == 1) {
                 candidates.addAll(Arrays.asList("set", "remove"));

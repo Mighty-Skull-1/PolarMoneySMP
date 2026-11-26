@@ -32,6 +32,7 @@ public class MoneySMP extends JavaPlugin {
     private BannedItemManager bannedItemManager;
     private SMPGuiManager smpGuiManager;
     private StatsManager statsManager;
+    private me.moneysmp.managers.RankManager rankManager;
     private me.moneysmp.web.WebServerManager webServerManager;
 
     @Override
@@ -48,7 +49,8 @@ public class MoneySMP extends JavaPlugin {
         this.eliminationManager = new EliminationManager(this);
         this.bannedItemManager = new BannedItemManager(this);
         this.statsManager = new StatsManager();
-        this.dataManager = new DataManager(this, teamManager, creditManager, tierManager, phaseManager, eliminationManager, statsManager);
+        this.rankManager = new me.moneysmp.managers.RankManager(this);
+        this.dataManager = new DataManager(this, teamManager, creditManager, tierManager, phaseManager, eliminationManager, statsManager, rankManager);
 
         this.draftManager = new DraftManager(this, teamManager, creditManager, tierManager);
         this.eventManager = new EventManager(this, teamManager, creditManager);
@@ -107,6 +109,9 @@ public class MoneySMP extends JavaPlugin {
 
         getCommand("website").setExecutor(new WebsiteCommand(this));
 
+        getCommand("rank").setExecutor(new me.moneysmp.commands.RankCommand(this, rankManager));
+        getCommand("rank").setTabCompleter(tabCompleter);
+
         BannedItemsCommand bannedItemsCommand = new BannedItemsCommand(bannedItemManager);
         getCommand("banneditems").setExecutor(bannedItemsCommand);
         getCommand("banneditems").setTabCompleter(tabCompleter);
@@ -117,6 +122,7 @@ public class MoneySMP extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new BingoEventListener(this, eventManager), this);
         getServer().getPluginManager().registerEvents(new me.moneysmp.listeners.DraftItemListener(this, draftManager), this);
         getServer().getPluginManager().registerEvents(new BannedItemListener(bannedItemManager), this);
+        getServer().getPluginManager().registerEvents(new me.moneysmp.listeners.RankListener(rankManager), this);
 
         // --- Schedulers ---
         Bukkit.getScheduler().runTaskTimer(this, () -> displayManager.updateAllDisplays(), 0L, 20L);
@@ -130,6 +136,7 @@ public class MoneySMP extends JavaPlugin {
         // After a /reload, players are already online: clean up leftover draft items and refresh their displays.
         for (org.bukkit.entity.Player online : Bukkit.getOnlinePlayers()) {
             try { draftManager.takeItems(online); } catch (Throwable ignored) {}
+            try { rankManager.apply(online); } catch (Throwable ignored) {}
         }
         Bukkit.getScheduler().runTask(this, () -> { if (displayManager != null) displayManager.updateAllDisplays(); });
 
@@ -145,6 +152,7 @@ public class MoneySMP extends JavaPlugin {
         safely("cancel draft auction", () -> { if (draftManager != null) draftManager.cancelDraft(); });
         safely("save data", () -> { if (dataManager != null) dataManager.saveData(); });
         safely("stop web sync", () -> { if (webServerManager != null) webServerManager.stop(); });
+        safely("remove rank permissions", () -> { if (rankManager != null) rankManager.removeAll(); });
         Bukkit.getScheduler().cancelTasks(this);
         getLogger().info("Willy Money SMP v" + getPluginMeta().getVersion() + " disabled successfully and data saved!");
     }
@@ -183,6 +191,7 @@ public class MoneySMP extends JavaPlugin {
     public BannedItemManager getBannedItemManager() { return bannedItemManager; }
     public StatsManager getStatsManager() { return statsManager; }
     public DisplayManager getDisplayManager() { return displayManager; }
+    public me.moneysmp.managers.RankManager getRankManager() { return rankManager; }
 
     public void resetTournament(CommandSender sender) {
         // 1. Stop any ongoing draft auction or events

@@ -184,8 +184,8 @@ Type **`/smp`** to open the interactive Admin Control Panel:
   Slot 18: [White Banner]     Capture Points (Left: start today, Right: close all)
   Slot 22: [Filled Map]       Lockout Bingo Toggle
   Slot 23: [Ender Eye]        Save Tournament Data to data.yml
-  Slot 24: [Redstone Torch]   Reload Configurations
-  Slot 25: [TNT]              RESET TOURNAMENT (Shift-Click to confirm)
+  Slot 24: [Redstone Torch]   Reload Configurations (Owners only)
+  Slot 25: [TNT]              RESET TOURNAMENT (Shift-Click to confirm, Owners only)
   Slot 26: [Barrier]          Close Menu
 ```
 
@@ -203,7 +203,17 @@ After running tests, you can completely reset everything to the beginning:
   - Credits reset to starting defaults (`game: 100`, `draft: 300`).
   - Tournament phase reset to `Draft`.
   - All ongoing events stopped.
-  - `data.yml` wiped fresh.
+  - `data.yml` wiped fresh (staff ranks and saved player names are kept).
+
+### Staff Ranks (Owner / Admin)
+Set with **`/rank set <player> owner|admin|none`** (see everyone with `/rank list`). Only **server operators and the console** can use `/rank` - not Admins, not Owners. Works for offline players and players who have never joined. Ranks are saved by UUID in `data.yml`.
+
+| Rank | Shown as | Can do |
+| :--- | :--- | :--- |
+| **Owner** | `[Owner]` before the name in tab and chat | Every plugin command (except `/rank`, which is ops only). |
+| **Admin** | `[Admin]` before the name in tab and chat | Run events, the draft, fines, subs, teams, tiers and credits. **Not**: `/smp reset`, `/smp reload`, `/smp setip` (or the Reload/Reset buttons in `/smp`), or `/rank`. |
+
+Ops can do everything an Owner can.
 
 ---
 
@@ -225,8 +235,9 @@ After running tests, you can completely reset everything to the beginning:
 | :--- | :--- | :--- |
 | `/smp` | — | Open the Admin Control Panel GUI. |
 | `/smp phase <draft\|grace\|pvp\|finale>` | — | Switch the active tournament phase. |
-| `/smp reset confirm` | — | Perform a complete tournament wipe & reset. |
-| `/smp reload` | — | Reload config.yml. |
+| `/smp reset confirm` | — | Perform a complete tournament wipe & reset. **Owners only.** |
+| `/smp reload` | — | Reload config.yml. **Owners only.** |
+| `/rank set <player> owner\|admin\|none` | — | Give or remove a staff rank. **Ops and console only.** Also `/rank list`. |
 | `/smp save` | — | Force an immediate write of all data to `data.yml`. |
 | `/banneditems add <material> [reason]` | — | Ban an item material from the tournament. |
 | `/banneditems remove <material>` | `/banneditems unban` | Remove an item from the ban list. |
@@ -266,5 +277,5 @@ The plugin pushes the standings, draft auction and draft pool to the website
   copy it into the website's `SIGNING_PUBLIC_KEY` (or upload the key file that matches the site).
 - `/smp sync` pushes an update immediately, `/smp webkey` shows the public key.
 - `/smp version` shows which plugin version the server is running (see CHANGELOG.md).
-- `/smp setip <address>` changes the server address shown on the website (saved as `server-address` in `config.yml`).
+- `/smp setip <address>` changes the server address shown on the website (saved as `server-address` in `config.yml`). Owners only.
 - Settings live under `web-sync:` in `config.yml` (`ntfy-topic` must match `NTFY_TOPIC` on the website).

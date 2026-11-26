@@ -23,6 +23,7 @@ public class DataManager {
     private final PhaseManager phaseManager;
     private final EliminationManager eliminationManager;
     private final StatsManager statsManager;
+    private final RankManager rankManager;
 
     private final File dataFile;
     private FileConfiguration dataConfig;
@@ -35,7 +36,8 @@ public class DataManager {
 
     public DataManager(JavaPlugin plugin, TeamManager teamManager, CreditManager creditManager,
                        TierManager tierManager, PhaseManager phaseManager, EliminationManager eliminationManager,
-                       StatsManager statsManager) {
+                       StatsManager statsManager, RankManager rankManager) {
+        this.rankManager = rankManager;
         this.plugin = plugin;
         this.teamManager = teamManager;
         this.creditManager = creditManager;
@@ -158,6 +160,16 @@ public class DataManager {
             }
         }
 
+        // Load staff ranks (Owner / Admin)
+        ConfigurationSection ranksSec = dataConfig.getConfigurationSection("ranks");
+        if (ranksSec != null && rankManager != null) {
+            for (String key : ranksSec.getKeys(false)) {
+                try {
+                    rankManager.loadRank(UUID.fromString(key), me.moneysmp.models.Rank.valueOf(ranksSec.getString(key)));
+                } catch (Exception ignored) {}
+            }
+        }
+
         hadTeamsOnLoad = !teamManager.getTeams().isEmpty();
         plugin.getLogger().info("Tournament data loaded successfully from data.yml (" + teamManager.getTeams().size() + " teams)");
     }
@@ -222,6 +234,13 @@ public class DataManager {
         // Save player names (so players who have never joined still show by name)
         for (Map.Entry<UUID, String> entry : me.moneysmp.util.PlayerNames.all().entrySet()) {
             dataConfig.set("names." + entry.getKey().toString(), entry.getValue());
+        }
+
+        // Save staff ranks (kept through a tournament reset)
+        if (rankManager != null) {
+            for (Map.Entry<UUID, me.moneysmp.models.Rank> entry : rankManager.getAllRanks().entrySet()) {
+                dataConfig.set("ranks." + entry.getKey().toString(), entry.getValue().name());
+            }
         }
 
         // Write to a temp file, then swap it in: a crash or reload mid-save can never leave a half-written data.yml.

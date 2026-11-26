@@ -59,7 +59,13 @@ public class DisplayManager {
         String teamDisplay = (team != null) ? teamColor + "[" + team.getName() + "]" : "§7[No Team]";
         String isCaptainHighlight = (team != null && team.isCaptain(player.getUniqueId())) ? "§e★ " : "";
 
-        String tabName = tier.getPrefix(team != null ? team.getColorCode() : null) + " " + teamDisplay + " " + isCaptainHighlight + teamColor + player.getName();
+        // Staff rank goes first: "[Owner] [S-CAPTAIN] [TeamBlue] Name"
+        String rankPrefix = "";
+        if (plugin instanceof me.moneysmp.MoneySMP smp && smp.getRankManager() != null) {
+            me.moneysmp.models.Rank rank = smp.getRankManager().getRank(player.getUniqueId());
+            if (rank != me.moneysmp.models.Rank.NONE) rankPrefix = rank.getPrefix() + " §r";
+        }
+        String tabName = rankPrefix + tier.getPrefix(team != null ? team.getColorCode() : null) + " " + teamDisplay + " " + isCaptainHighlight + teamColor + player.getName();
         player.setPlayerListName(tabName);
 
         player.setPlayerListHeader("§6§l★ WILLY MONEY SMP ★\n§7Phase: " + phaseManager.getCurrentPhase().getDisplayName() + "\n");

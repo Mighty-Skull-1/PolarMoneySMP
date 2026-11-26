@@ -27,6 +27,12 @@ public class SMPCommand implements CommandExecutor {
         this.smpGuiManager = smpGuiManager;
     }
 
+    /** /smp subcommands that reset data or change config - Owners (and ops/console) only. */
+    private static boolean isOwnerOnly(String sub) {
+        String s = sub.toLowerCase();
+        return s.equals("reset") || s.equals("reload") || s.equals("setip") || s.equals("setaddress");
+    }
+
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         // /smp version - shows which plugin version the server is running.
@@ -38,6 +44,12 @@ public class SMPCommand implements CommandExecutor {
 
         if (!sender.hasPermission("moneysmp.admin")) {
             sender.sendMessage("§cAdmin only!");
+            return true;
+        }
+
+        // Owner-only: reset data and change config. Admins can do everything else in /smp.
+        if (args.length >= 1 && isOwnerOnly(args[0]) && !sender.hasPermission(me.moneysmp.managers.RankManager.OWNER_PERMISSION)) {
+            sender.sendMessage("§cOnly Owners can do that (reset data or change config).");
             return true;
         }
 

@@ -293,7 +293,12 @@ public class SMPGuiManager {
                 }
                 break;
 
-            case 24: // Reload Configs
+            case 24: // Reload Configs (Owners only)
+                if (!player.hasPermission(RankManager.OWNER_PERMISSION)) {
+                    player.sendMessage("§cOnly Owners can reload the config.");
+                    player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 1.0f, 0.5f);
+                    break;
+                }
                 if (plugin != null) {
                     plugin.reloadConfig();
                 }
@@ -301,7 +306,12 @@ public class SMPGuiManager {
                 player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_CHIME, 1.0f, 1.5f);
                 break;
 
-            case 25: // Reset Tournament
+            case 25: // Reset Tournament (Owners only)
+                if (!player.hasPermission(RankManager.OWNER_PERMISSION)) {
+                    player.sendMessage("§cOnly Owners can reset the tournament.");
+                    player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 1.0f, 0.5f);
+                    break;
+                }
                 if (clickType.isShiftClick()) {
                     if (plugin instanceof MoneySMP smp) {
                         player.closeInventory();

@@ -10,6 +10,17 @@ Check which version a server is running with `/smp version` (it's also shown in 
 
 ---
 
+## 3.5.0 (2026-11-26)
+
+**Owner and Admin staff ranks.**
+
+- New `/rank set <player> owner|admin|none` and `/rank list`. Only server operators and the console can use `/rank` - not Admins, and not Owners either.
+- `[Owner]` or `[Admin]` shows before the player's name in the tab list and in chat.
+- **Owners** can use every plugin command (except `/rank`).
+- **Admins** can run events, the draft, fines, subs, teams, tiers and credits, but can't reset the tournament (`/smp reset`), reload the config (`/smp reload`), change the server address (`/smp setip`), or use the Reload and Reset buttons in the `/smp` menu.
+- Ranks are saved by UUID in a new `ranks:` section in `data.yml`. They work for offline players and players who have never joined, and they're kept when the tournament is reset.
+- Server operators keep full access, like before.
+
 ## 3.4.0 (2026-11-26)
 
 **Draft players who have never joined the server.**

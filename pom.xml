@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>me.moneysmp</groupId>
     <artifactId>MoneySMP</artifactId>
-    <version>3.4.0</version>
+    <version>3.5.0</version>
 
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
@@ -29,7 +29,7 @@
     </dependencies>
 
     <build>
-        <!-- Jar is named with the version, e.g. WillyMoneySMP-3.4.0.jar -->
+        <!-- Jar is named with the version, e.g. WillyMoneySMP-3.5.0.jar -->
         <finalName>WillyMoneySMP-${project.version}</finalName>
     </build>
 </project>
