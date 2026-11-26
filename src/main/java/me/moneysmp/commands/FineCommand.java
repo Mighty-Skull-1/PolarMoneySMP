@@ -13,7 +13,6 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 
 import java.io.File;
-import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -37,11 +36,22 @@ public class FineCommand implements CommandExecutor {
         this.teamManager = teamManager;
         this.creditManager = creditManager;
         this.logFile = new File(plugin.getDataFolder(), "fines.yml");
+        // Check it can be read now, so a broken fines.yml is reported at startup (and never saved over).
+        me.moneysmp.util.DataSafety.load(plugin, logFile);
+    }
+
+    /** True (and tells the sender) when fines.yml couldn't be read - fines are paused so the log isn't overwritten. */
+    private boolean finesFileBroken(CommandSender sender) {
+        if (!me.moneysmp.util.DataSafety.isUnreadable("fines.yml")) return false;
+        sender.sendMessage("§cFines are paused: fines.yml couldn't be read, so nothing is saved to it (no fines are lost). "
+                + "Fix it or restore it from the backups folder, then restart.");
+        return true;
     }
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (args.length == 0) { help(sender); return true; }
+        if (finesFileBroken(sender)) return true;
         if (args[0].equalsIgnoreCase("history")) { history(sender, args.length > 1 ? args[1] : null); return true; }
         if (args[0].equalsIgnoreCase("undo")) { undo(sender); return true; }
         if (args.length < 3) { help(sender); return true; }
@@ -116,7 +126,11 @@ public class FineCommand implements CommandExecutor {
     }
 
     // ---------------------------------------------------------------- log
-    private YamlConfiguration readLog() { return YamlConfiguration.loadConfiguration(logFile); }
+    /** The fine log, or an empty one if fines.yml became unreadable (it's then marked, and never saved over). */
+    private YamlConfiguration readLog() {
+        YamlConfiguration y = me.moneysmp.util.DataSafety.load(plugin, logFile);
+        return y != null ? y : new YamlConfiguration();
+    }
 
     private void log(String admin, String team, String player, int amount, String reason, Map<String, Integer> taken) {
         YamlConfiguration y = readLog();
@@ -131,7 +145,7 @@ public class FineCommand implements CommandExecutor {
         e.put("taken", taken);
         list.add(e);
         y.set("fines", list);
-        try { y.save(logFile); } catch (IOException ex) { plugin.getLogger().warning("Couldn't write fines.yml: " + ex.getMessage()); }
+        me.moneysmp.util.DataSafety.saveAtomically(plugin, y, logFile);
     }
 
     private void history(CommandSender sender, String filter) {
@@ -156,6 +170,12 @@ public class FineCommand implements CommandExecutor {
         List<Map<?, ?>> list = new ArrayList<>(y.getMapList("fines"));
         if (list.isEmpty()) { sender.sendMessage("§7[Fines] There's no fine to undo."); return; }
         Map<?, ?> last = list.remove(list.size() - 1);
+        // Take it off the log first: if fines.yml can't be written, nothing is refunded (no double refunds later).
+        y.set("fines", list);
+        if (!me.moneysmp.util.DataSafety.saveAtomically(plugin, y, logFile)) {
+            sender.sendMessage("§cCouldn't update fines.yml, so the fine was not refunded.");
+            return;
+        }
         Object takenObj = last.get("taken");
         if (takenObj instanceof Map<?, ?> taken) {
             for (Map.Entry<?, ?> e : taken.entrySet()) {
@@ -163,8 +183,6 @@ public class FineCommand implements CommandExecutor {
                 catch (Exception ignored) {}
             }
         }
-        y.set("fines", list);
-        try { y.save(logFile); } catch (IOException ignored) {}
         Bukkit.broadcastMessage("§a[FINE REFUNDED] §f" + (last.get("player") != null ? last.get("player") : last.get("team"))
                 + " §agot their §f" + last.get("amount") + " credits §aback §7(" + last.get("reason") + ")");
         if (plugin.getDataManager() != null) plugin.getDataManager().saveData();

@@ -151,39 +151,13 @@ public class TeamCommand implements CommandExecutor {
                 return true;
             }
             String teamName = args[1];
-            if (teamManager.teamExists(teamName)) {
-                sender.sendMessage("§cA team named '" + teamName + "' already exists!");
-                return true;
-            }
+            if (createTeamProblem(sender, teamName)) return true;
 
-            int maxTeams = plugin != null ? plugin.getConfig().getInt("max-teams", 4) : 4;
-            if (teamManager.getTeams().size() >= maxTeams) {
-                sender.sendMessage("§cThere are already " + maxTeams + " teams (max-teams in config.yml).");
-                return true;
-            }
-
-            Player captain = Bukkit.getPlayer(args[2]);
-            if (captain == null) {
-                sender.sendMessage("§cCaptain player not found!");
-                return true;
-            }
-
-            if (teamManager.getTeamByPlayer(captain.getUniqueId()) != null) {
-                sender.sendMessage("§c" + captain.getName() + " is already in a team! Remove them first.");
-                return true;
-            }
-
-            int draftCredits = plugin != null ? plugin.getConfig().getInt("starting-draft-credits", 300) : 300;
-            int gameCredits = plugin != null ? plugin.getConfig().getInt("starting-game-credits", 100) : 100;
-
-            Team team = teamManager.createTeam(teamName, captain.getUniqueId());
-            tierManager.setTier(captain.getUniqueId(), PlayerTier.CAPTAIN);
-            creditManager.setDraftCredits(captain.getUniqueId(), draftCredits);
-            creditManager.setGameCredits(captain.getUniqueId(), gameCredits);
-
-            sender.sendMessage("§aTeam " + teamName + " created with Captain " + captain.getName() +
-                    " (" + draftCredits + " Draft / " + gameCredits + " Game Credits)!");
-            triggerCloudSync();
+            // Captain can be online, offline or someone who has never joined (Mojang lookup runs off the main thread).
+            me.moneysmp.util.PlayerLookup.resolve(plugin, args[2], result -> {
+                if (!result.found()) { sender.sendMessage(me.moneysmp.util.PlayerLookup.failMessage(result, args[2])); return; }
+                createTeam(sender, teamName, result.uuid(), result.name() != null ? result.name() : args[2]);
+            });
         } else if (sub.equals("remove")) {
             if (args.length < 2) {
                 sender.sendMessage("§cUsage: /team remove <player>");
@@ -276,6 +250,52 @@ public class TeamCommand implements CommandExecutor {
             if (!result.found()) { sender.sendMessage(me.moneysmp.util.PlayerLookup.failMessage(result, args[2])); return; }
             doSubstitute(sender, args[1], result.uuid(), result.name() != null ? result.name() : args[2]);
         });
+    }
+
+    /** Checks the team name and team limit for /team create. Returns true (and tells the sender) if it can't be made. */
+    private boolean createTeamProblem(CommandSender sender, String teamName) {
+        if (teamManager.teamExists(teamName)) {
+            sender.sendMessage("§cA team named '" + teamName + "' already exists!");
+            return true;
+        }
+        int maxTeams = plugin != null ? plugin.getConfig().getInt("max-teams", 4) : 4;
+        if (teamManager.getTeams().size() >= maxTeams) {
+            sender.sendMessage("§cThere are already " + maxTeams + " teams (max-teams in config.yml).");
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Makes the team with this captain. Works for captains who have never joined: they're saved by UUID
+     * (with their name), so they show in /team list and on the website now, and are captain when they first join.
+     */
+    private void createTeam(CommandSender sender, String teamName, UUID captainId, String captainName) {
+        // Check again: things may have changed while we were asking Mojang.
+        if (createTeamProblem(sender, teamName)) return;
+        Team current = teamManager.getTeamByPlayer(captainId);
+        if (current != null) {
+            sender.sendMessage("§c" + captainName + " is already on " + current.getName() + "! Remove them first.");
+            return;
+        }
+
+        int draftCredits = plugin != null ? plugin.getConfig().getInt("starting-draft-credits", 300) : 300;
+        int gameCredits = plugin != null ? plugin.getConfig().getInt("starting-game-credits", 100) : 100;
+
+        teamManager.createTeam(teamName, captainId);
+        tierManager.setTier(captainId, PlayerTier.CAPTAIN);
+        creditManager.setDraftCredits(captainId, draftCredits);
+        creditManager.setGameCredits(captainId, gameCredits);
+
+        boolean online = Bukkit.getPlayer(captainId) != null;
+        sender.sendMessage("§aTeam " + teamName + " created with Captain " + captainName +
+                " (" + draftCredits + " Draft / " + gameCredits + " Game Credits)!"
+                + (online ? "" : " §7(" + captainName + " isn't online - they'll be captain when they join.)"));
+        if (plugin instanceof me.moneysmp.MoneySMP smp) {
+            if (smp.getDataManager() != null) smp.getDataManager().saveData();
+            if (smp.getDisplayManager() != null) smp.getDisplayManager().updateAllDisplays();
+        }
+        triggerCloudSync();
     }
 
     /** Finds a team member by name (works for offline and never-joined players). */

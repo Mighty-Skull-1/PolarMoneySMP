@@ -246,7 +246,7 @@ Ops can do everything an Owner can.
 | `/banneditems list` | — | List all banned items and reasons in chat. |
 | `/tier set <player> <A|B|C|D>` | — | Assign a player's tier. Works for players who are offline or have never joined. |
 | `/tier remove <player>` | — | Remove a player's assigned tier. |
-| `/team create <name> <captain>` | — | Create a team with a captain. |
+| `/team create <name> <captain>` | — | Create a team with a captain. Works for players who are offline or have never joined (their UUID is looked up from Mojang) - they show in `/team list` and on the website straight away, and are captain when they first log in. |
 | `/team remove <player>` | — | Remove a player from their team. |
 | `/team disband <team>` | — | Disband an entire team. |
 | `/bid nominate <player>` | — | Put a player up for auction (captains get bid items, you get SOLD/CANCEL). Works for offline players and players who have never joined - they're on their team when they first log in. |
@@ -254,7 +254,7 @@ Ops can do everything an Owner can.
 | `/bid sold` | — | Sell the player to the top bidder (same as the SOLD item). |
 | `/fine <player\|team> <amount> <reason>` | — | Fine a player or team (comes out of the team's money, player first). Also `/fine history`, `/fine undo`. Logged to fines.yml. |
 | `/cp startday` | — | Open today's capture points (also `set`, `list`, `open`, `stopday`, `remove`). |
-| `/credits give <player> <amt> [game\|draft]` | — | Give credits to a player. |
+| `/credits give <player> <amt> [game\|draft]` | — | Give credits to a player (all `/credits` commands work for offline and never-joined players). |
 | `/credits take <player> <amt> [game\|draft]` | — | Deduct credits from a player. |
 | `/credits set <player> <amt> [game\|draft]` | — | Set a player's credit balance. |
 | `/credits balance <player>` | — | Check credit balances of a player. |
@@ -280,3 +280,15 @@ The plugin pushes the standings, draft auction and draft pool to the website
 - `/smp version` shows which plugin version the server is running (see CHANGELOG.md).
 - `/smp setip <address>` changes the server address shown on the website (saved as `server-address` in `config.yml`). Owners only.
 - Settings live under `web-sync:` in `config.yml` (`ntfy-topic` must match `NTFY_TOPIC` on the website).
+
+## Updating safely
+
+Every update must keep the saved data exactly as it is: teams, captains, tiers (S, A, B, C, D), credits, ranks, fines and running events. Follow these rules for every change:
+
+- **Never delete or rename a saved field** in `data.yml`, `fines.yml` or `events-state.yml`. A new feature that needs new saved data adds **new fields with safe defaults** (missing = the old behaviour). Fields the plugin doesn't know are kept when it saves.
+- **Never reset data on startup.** Only `/smp reset confirm` wipes the tournament.
+- **Backups on every update:** when the plugin version changes, it copies `data.yml`, `fines.yml`, `events-state.yml`, `banned-items.yml` and `config.yml` into `plugins/WillyMoneySMP/backups/update_<date>_from-<old>_to-<new>/` before loading anything. (It also keeps the last 20 copies of `data.yml` from every start.)
+- **Unreadable file = no saving to it.** If a file can't be read, the plugin never saves over it, and warns admins in the console and in chat (and again whenever an admin joins). Fix the file or copy one back from `backups/`, then restart.
+- **New config options are added automatically.** On startup, any option in the new `config.yml` that your server's `config.yml` doesn't have yet is added with its default value. Values you've already set are never changed.
+- **Don't change `name: WillyMoneySMP`** in `plugin.yml`. It decides the data folder (`plugins/WillyMoneySMP`); changing it would start with an empty folder.
+- Every change bumps the version (big.medium.small) in `pom.xml` and `plugin.yml`, with a short entry in `CHANGELOG.md`.

@@ -10,6 +10,17 @@ Check which version a server is running with `/smp version` (it's also shown in 
 
 ---
 
+## 3.7.1 (2026-11-26)
+
+- **Your data is kept safe on every update.** When a new version starts for the first time, it copies `data.yml`, `fines.yml`, `events-state.yml`, `banned-items.yml` and `config.yml` into `backups/update_<date>_from-<old>_to-<new>/` before loading anything.
+- If any of those files can't be read, the plugin no longer saves over it. Saving to that file stops, and admins are warned in the console and in chat. Before this, a broken `fines.yml`, `events-state.yml`, `banned-items.yml` or `config.yml` could be wiped. While `fines.yml` is unreadable, `/fine` is paused.
+- Saving `data.yml` now keeps any fields this version doesn't know about, instead of dropping them.
+- New options in `config.yml` are added to your server's `config.yml` automatically, without changing the values you've already set.
+- `/team create <team> <captain>` works for players who have never joined. The name is looked up from Mojang (off the main thread), and the captain is saved by UUID with their name. They show in `/team list` and on the website straight away, and are captain with the right team colour and tier when they first join. A name that doesn't exist says "Player not found".
+- `/credits` now works for offline and never-joined players too. `/ffa out` no longer risks freezing the server while it looks up a name.
+- New "Updating safely" section in the README with these rules.
+- No existing data is changed or reset.
+
 ## 3.7.0 (2026-11-26)
 
 - New **Sub** rank for substitute players: `/rank set <player> sub`. They get a blue `[Sub]` tag before their name in tab and chat, and show up in `/rank list` under the Owners and Admins.

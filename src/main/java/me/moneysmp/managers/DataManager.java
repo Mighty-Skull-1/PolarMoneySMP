@@ -34,6 +34,10 @@ public class DataManager {
     private boolean hadTeamsOnLoad = false;
     private boolean resetInProgress = false;
 
+    /** Top-level keys this version reads and writes. Anything else in data.yml is kept exactly as it is. */
+    private static final java.util.Set<String> MANAGED_KEYS = java.util.Set.of(
+            "phase", "tiers", "draft-credits", "game-credits", "teams", "eliminated", "kills", "deaths", "names", "ranks");
+
     public DataManager(JavaPlugin plugin, TeamManager teamManager, CreditManager creditManager,
                        TierManager tierManager, PhaseManager phaseManager, EliminationManager eliminationManager,
                        StatsManager statsManager, RankManager rankManager) {
@@ -62,11 +66,8 @@ public class DataManager {
             loadFailed = true;
             File broken = new File(plugin.getDataFolder(), "data-unreadable-" + stamp() + ".yml");
             try { java.nio.file.Files.copy(dataFile.toPath(), broken.toPath()); } catch (IOException ignored) {}
-            plugin.getLogger().severe("==============================================================");
-            plugin.getLogger().severe("data.yml could not be read: " + e.getMessage());
-            plugin.getLogger().severe("NOTHING will be saved over it, so your tournament data is safe.");
-            plugin.getLogger().severe("A copy is at " + broken.getName() + ". Restore a file from the backups folder and restart.");
-            plugin.getLogger().severe("==============================================================");
+            // Logs it, warns admins in chat (now and when they join) and blocks every save to data.yml.
+            me.moneysmp.util.DataSafety.markUnreadable(plugin, "data.yml", e.getMessage() + " (a copy is at " + broken.getName() + ")");
             dataConfig = new YamlConfiguration();
             return;
         }
@@ -183,7 +184,13 @@ public class DataManager {
             plugin.getLogger().warning("Not saving: no teams in memory but data.yml has teams. Refusing to overwrite it.");
             return;
         }
+        // Start from what's in data.yml now and only replace the parts this version manages, so fields
+        // added by other versions (or by hand) are never deleted.
+        YamlConfiguration previous = dataConfig instanceof YamlConfiguration y ? y : new YamlConfiguration();
         dataConfig = new YamlConfiguration();
+        for (String key : previous.getKeys(false)) {
+            if (!MANAGED_KEYS.contains(key)) dataConfig.set(key, previous.get(key));
+        }
 
         // Save Phase
         dataConfig.set("phase", phaseManager.getCurrentPhase().name());

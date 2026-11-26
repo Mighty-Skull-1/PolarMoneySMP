@@ -58,7 +58,9 @@ public class BannedItemManager {
                 createDefaultConfig();
             }
         }
-        bannedConfig = YamlConfiguration.loadConfiguration(bannedConfigFile);
+        // A broken banned-items.yml is never saved over (admins are warned); the default bans still apply meanwhile.
+        YamlConfiguration loaded = me.moneysmp.util.DataSafety.load(plugin, bannedConfigFile);
+        bannedConfig = loaded != null ? loaded : new YamlConfiguration();
         ConfigurationSection sec = bannedConfig.getConfigurationSection("banned-items");
         if (sec != null) {
             for (String key : sec.getKeys(false)) {
@@ -113,11 +115,7 @@ public class BannedItemManager {
             bannedConfig.set("banned-items." + key + ".reason", entry.getValue().getReason());
             bannedConfig.set("banned-items." + key + ".alternative", entry.getValue().getAlternative());
         }
-        try {
-            bannedConfig.save(bannedConfigFile);
-        } catch (IOException e) {
-            plugin.getLogger().warning("Could not save banned-items.yml: " + e.getMessage());
-        }
+        me.moneysmp.util.DataSafety.saveAtomically(plugin, bannedConfig, bannedConfigFile);
     }
 
     public boolean isBanned(Material material) {

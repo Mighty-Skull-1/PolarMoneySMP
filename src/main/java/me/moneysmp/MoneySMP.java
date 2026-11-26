@@ -37,8 +37,13 @@ public class MoneySMP extends JavaPlugin {
 
     @Override
     public void onEnable() {
+        // New version? Copy every data file to backups/ before anything is loaded or changed.
+        me.moneysmp.util.DataSafety.backupIfNewVersion(this);
         saveDefaultConfig();
-        migrateConfig();
+        if (checkConfigReadable()) {
+            migrateConfig();
+            addMissingConfigOptions();
+        }
 
         int defaultGameCredits = getConfig().getInt("starting-game-credits", 100);
 
@@ -102,7 +107,7 @@ public class MoneySMP extends JavaPlugin {
         getCommand("bingo").setExecutor(new BingoCommand(eventManager));
         getCommand("bingo").setTabCompleter(tabCompleter);
 
-        getCommand("credits").setExecutor(new CreditsCommand(creditManager));
+        getCommand("credits").setExecutor(new CreditsCommand(this, creditManager));
         getCommand("credits").setTabCompleter(tabCompleter);
 
         getCommand("leaderboard").setExecutor(new LeaderboardCommand(teamManager, creditManager));
@@ -123,6 +128,7 @@ public class MoneySMP extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new me.moneysmp.listeners.DraftItemListener(this, draftManager), this);
         getServer().getPluginManager().registerEvents(new BannedItemListener(bannedItemManager), this);
         getServer().getPluginManager().registerEvents(new me.moneysmp.listeners.RankListener(rankManager), this);
+        getServer().getPluginManager().registerEvents(me.moneysmp.util.DataSafety.joinWarnings(), this);
 
         // --- Schedulers ---
         Bukkit.getScheduler().runTaskTimer(this, () -> displayManager.updateAllDisplays(), 0L, 20L);
@@ -166,20 +172,60 @@ public class MoneySMP extends JavaPlugin {
         org.bukkit.configuration.file.YamlConfiguration y = new org.bukkit.configuration.file.YamlConfiguration();
         if (eventManager != null) eventManager.saveState(y.createSection("bingo"));
         if (capturePointManager != null) capturePointManager.saveState(y.createSection("capture"));
-        try {
-            y.save(new java.io.File(getDataFolder(), "events-state.yml"));
-        } catch (java.io.IOException e) {
-            getLogger().warning("Couldn't save events-state.yml: " + e.getMessage());
-        }
+        // Refuses if events-state.yml couldn't be read at startup (so it's never overwritten).
+        me.moneysmp.util.DataSafety.saveAtomically(this, y, new java.io.File(getDataFolder(), "events-state.yml"));
     }
 
     private void loadEventState() {
         java.io.File f = new java.io.File(getDataFolder(), "events-state.yml");
         if (!f.exists()) return;
-        org.bukkit.configuration.file.YamlConfiguration y = org.bukkit.configuration.file.YamlConfiguration.loadConfiguration(f);
+        org.bukkit.configuration.file.YamlConfiguration y = me.moneysmp.util.DataSafety.load(this, f);
+        if (y == null) return; // unreadable: keep the file as it is (admins have been warned)
         safely("restore bingo", () -> eventManager.loadState(y.getConfigurationSection("bingo")));
         safely("restore capture points", () -> capturePointManager.loadState(y.getConfigurationSection("capture")));
         f.delete();
+    }
+
+    /**
+     * Bukkit quietly treats a broken config.yml as empty, and the next save would replace it with defaults.
+     * We read it ourselves first; if it's broken, nothing is ever saved over it (see {@link #saveConfig()}).
+     */
+    private boolean checkConfigReadable() {
+        java.io.File f = new java.io.File(getDataFolder(), "config.yml");
+        return me.moneysmp.util.DataSafety.load(this, f) != null;
+    }
+
+    @Override
+    public void saveConfig() {
+        if (me.moneysmp.util.DataSafety.isUnreadable("config.yml")) {
+            getLogger().warning("Not saving config.yml: it couldn't be read at startup, so saving would overwrite your settings.");
+            return;
+        }
+        super.saveConfig();
+    }
+
+    /**
+     * Adds options that are new in this version's config.yml (with their default values) to the server's
+     * config.yml. Settings that are already there are never changed.
+     */
+    private void addMissingConfigOptions() {
+        org.bukkit.configuration.Configuration defaults = getConfig().getDefaults();
+        if (defaults == null) return;
+        java.util.List<String> added = new java.util.ArrayList<>();
+        for (String path : defaults.getKeys(true)) {
+            if (defaults.isConfigurationSection(path)) continue;
+            if (getConfig().isSet(path)) continue;
+            // Don't add a value inside something the server has set to a plain value (e.g. a list or number).
+            int dot = path.lastIndexOf('.');
+            if (dot > 0 && getConfig().isSet(path.substring(0, dot)) && !getConfig().isConfigurationSection(path.substring(0, dot))) continue;
+            getConfig().set(path, defaults.get(path));
+            added.add(path);
+        }
+        if (!added.isEmpty()) {
+            saveConfig();
+            getLogger().info("Added new config.yml option(s) with default values: " + String.join(", ", added)
+                    + ". Your existing settings were not changed.");
+        }
     }
 
     public DataManager getDataManager() { return dataManager; }
