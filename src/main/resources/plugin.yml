@@ -1,17 +1,17 @@
 name: WillyMoneySMP
-version: 3.5.1
+version: 3.6.3
 main: me.moneysmp.MoneySMP
 api-version: 1.20
-authors: [Jelani, Willy]
+authors: [Mighty]
 description: Full-featured tournament engine with Phase controls, Capture Points, Interactive GUI Bingo, and Draft Economy.
-website: https://willy-money-smp-web.vercel.app/
+website: https://polar-money-smp-web.vercel.app/
 
 commands:
   smp:
     description: Open the SMP Admin Control Panel GUI or manage phases
     permission: moneysmp.admin
   team:
-    description: Manage Willy Money SMP Teams
+    description: Manage Polar Money SMP Teams
   tier:
     description: Assign or remove player tiers
     permission: moneysmp.admin

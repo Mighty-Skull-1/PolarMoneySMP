@@ -36,7 +36,7 @@ public class AnnounceCommand implements CommandExecutor {
 
         String message = String.join(" ", args).replace("&", "§");
         String banner = "§6§m--------------------------------------------------";
-        String announcementHeader = "§e§l[WILLY MONEY SMP ANNOUNCEMENT]";
+        String announcementHeader = "§e§l[POLAR MONEY SMP ANNOUNCEMENT]";
 
         for (Player player : Bukkit.getOnlinePlayers()) {
             player.sendMessage(banner);

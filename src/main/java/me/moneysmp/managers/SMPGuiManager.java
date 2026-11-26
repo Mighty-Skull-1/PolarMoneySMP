@@ -288,7 +288,7 @@ public class SMPGuiManager {
             case 23: // Force Save Data
                 if (dataManager != null) {
                     dataManager.saveData();
-                    player.sendMessage("§a[Willy Money SMP] All tournament data successfully saved to data.yml!");
+                    player.sendMessage("§a[Polar Money SMP] All tournament data successfully saved to data.yml!");
                     player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_CHIME, 1.0f, 1.5f);
                 }
                 break;
@@ -302,7 +302,7 @@ public class SMPGuiManager {
                 if (plugin != null) {
                     plugin.reloadConfig();
                 }
-                player.sendMessage("§a[Willy Money SMP] Configuration reloaded successfully!");
+                player.sendMessage("§a[Polar Money SMP] Configuration reloaded successfully!");
                 player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_CHIME, 1.0f, 1.5f);
                 break;
 

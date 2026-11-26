@@ -68,14 +68,14 @@ public class DisplayManager {
         String tabName = rankPrefix + tier.getPrefix(team != null ? team.getColorCode() : null) + " " + teamDisplay + " " + isCaptainHighlight + teamColor + player.getName();
         player.setPlayerListName(tabName);
 
-        player.setPlayerListHeader("§6§l★ WILLY MONEY SMP ★\n§7Phase: " + phaseManager.getCurrentPhase().getDisplayName() + "\n");
+        player.setPlayerListHeader("§6§l★ POLAR MONEY SMP ★\n§7Phase: " + phaseManager.getCurrentPhase().getDisplayName() + "\n");
         player.setPlayerListFooter("\n§eOnline Players: §f" + Bukkit.getOnlinePlayers().size()
                 + "\n§7Live standings: §b" + websiteDisplay() + "\n");
     }
 
     /** Website address from config.yml (website-url), shown without https:// to keep it short. */
     private String websiteDisplay() {
-        String url = plugin.getConfig().getString("website-url", "https://willy-money-smp-web.vercel.app/");
+        String url = plugin.getConfig().getString("website-url", "https://polar-money-smp-web.vercel.app/");
         return url.replaceFirst("^https?://", "").replaceAll("/+$", "");
     }
 
@@ -86,7 +86,7 @@ public class DisplayManager {
 
         if (board == manager.getMainScoreboard() || board.getObjective("WillySMP") == null) {
             board = manager.getNewScoreboard();
-            Objective obj = board.registerNewObjective("WillySMP", Criteria.DUMMY, "§6§lWILLY MONEY SMP");
+            Objective obj = board.registerNewObjective("WillySMP", Criteria.DUMMY, "§6§lPOLAR MONEY SMP");
             obj.setDisplaySlot(DisplaySlot.SIDEBAR);
             try {
                 obj.numberFormat(io.papermc.paper.scoreboard.numbers.NumberFormat.blank()); // hide the red numbers

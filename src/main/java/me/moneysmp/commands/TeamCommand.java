@@ -50,7 +50,7 @@ public class TeamCommand implements CommandExecutor {
             }
 
             sender.sendMessage("§6§m--------------------------------------------------");
-            sender.sendMessage("§e§l         ★ WILLY MONEY SMP TEAMS ★");
+            sender.sendMessage("§e§l         ★ POLAR MONEY SMP TEAMS ★");
             sender.sendMessage("§6§m--------------------------------------------------");
             for (Team team : teams) {
                 Player cap = Bukkit.getPlayer(team.getCaptain());
@@ -133,7 +133,7 @@ public class TeamCommand implements CommandExecutor {
             }
 
             teamManager.renameTeam(team, newName);
-            Bukkit.broadcastMessage("§6[Willy Money SMP] Captain " + captain.getName() + " renamed " + oldName + " to §a" + newName + "§6!");
+            Bukkit.broadcastMessage("§6[Polar Money SMP] Captain " + captain.getName() + " renamed " + oldName + " to §a" + newName + "§6!");
             triggerCloudSync();
             return true;
         }
@@ -360,7 +360,7 @@ public class TeamCommand implements CommandExecutor {
     }
 
     private void sendHelp(CommandSender sender) {
-        sender.sendMessage("§6§l[Willy Money SMP Team Commands]");
+        sender.sendMessage("§6§l[Polar Money SMP Team Commands]");
         sender.sendMessage("§e/team list §7- View all registered tournament teams");
         sender.sendMessage("§e/team info [team] §7- View team roster, tiers, and credits");
         sender.sendMessage("§e/team rename <newName> §7- Captain only: Rename your team");

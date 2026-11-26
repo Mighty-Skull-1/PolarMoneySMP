@@ -37,7 +37,7 @@ public class LeaderboardCommand implements CommandExecutor {
         });
 
         sender.sendMessage("§6§m--------------------------------------------------");
-        sender.sendMessage("§e§l         ★ WILLY MONEY SMP LEADERBOARD ★");
+        sender.sendMessage("§e§l         ★ POLAR MONEY SMP LEADERBOARD ★");
         sender.sendMessage("§6§m--------------------------------------------------");
 
         int rank = 1;

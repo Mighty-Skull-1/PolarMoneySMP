@@ -109,7 +109,7 @@ public class KillEventListener implements Listener {
         Team killerTeam = teamManager.getTeamByPlayer(killer.getUniqueId());
 
         if (killerTeam != null && victimTeam != null && killerTeam.equals(victimTeam)) {
-            killer.sendMessage("§c[Willy Money SMP] Team Kill! No credits rewarded.");
+            killer.sendMessage("§c[Polar Money SMP] Team Kill! No credits rewarded.");
             return;
         }
 
@@ -162,7 +162,7 @@ public class KillEventListener implements Listener {
         if (team != null && !player.hasPlayedBefore()) {
             Bukkit.getScheduler().runTaskLater(plugin, () -> {
                 if (!player.isOnline()) return;
-                player.sendMessage("§6§l[Willy Money SMP] §eWelcome! You're on " + team.getColorCode() + "§l" + team.getName()
+                player.sendMessage("§6§l[Polar Money SMP] §eWelcome! You're on " + team.getColorCode() + "§l" + team.getName()
                         + "§e as " + tierManager.getTier(id).getPrefix(team.getColorCode()) + "§e. Use §f/team info §eto see your team.");
             }, 40L);
         }

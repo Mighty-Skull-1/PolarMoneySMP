@@ -20,10 +20,10 @@ public class WebsiteCommand implements CommandExecutor {
 
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-        String url = plugin.getConfig().getString("website-url", "https://willy-money-smp-web.vercel.app/");
+        String url = plugin.getConfig().getString("website-url", "https://polar-money-smp-web.vercel.app/");
         if (!url.startsWith("http")) url = "https://" + url;
 
-        sender.sendMessage("§6§l[Willy Money SMP] §eLive standings, draft board & team rosters:");
+        sender.sendMessage("§6§l[Polar Money SMP] §eLive standings, draft board & team rosters:");
         if (sender instanceof Player player) {
             TextComponent link = new TextComponent("§b§n" + url);
             link.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, url));

@@ -325,6 +325,7 @@ public class WebServerManager {
      *  p=phase, on/max=players, k=KOTH active, b=bingo active,
      *  T=teams [name, hex, bingoClaims, members[[name, tier, gameCredits, draftCredits, eliminated, kills, deaths]]] (captain first),
      *  pool=undrafted tiered players [[name, tier]], d=live auction or null, h=recent picks [[player, team, price]].
+ *  st=staff ranks [[name, "OWNER"|"ADMIN"]] (owners first).
      */
     String buildPayloadBody() {
         List<Team> teams = new ArrayList<>(teamManager.getTeams());
@@ -435,6 +436,23 @@ public class WebServerManager {
                 sb.append("[").append(str(BannedItemManager.formatMaterialName(ban.getMaterial()))).append(",")
                   .append(str(shorten(ban.getReason(), 160))).append(",")
                   .append(str(shorten(ban.getAlternative(), 80))).append("]");
+            }
+            sb.append("],");
+        }
+
+        // Staff (/rank): [[name, "OWNER"|"ADMIN"]], owners first, then by name. Empty list = nobody has a rank.
+        if (plugin instanceof me.moneysmp.MoneySMP smp && smp.getRankManager() != null) {
+            List<Map.Entry<UUID, me.moneysmp.models.Rank>> staff = new ArrayList<>(smp.getRankManager().getAllRanks().entrySet());
+            staff.removeIf(e -> e.getValue() == me.moneysmp.models.Rank.NONE);
+            staff.sort((a, b) -> {
+                int c = Integer.compare(a.getValue().ordinal(), b.getValue().ordinal());
+                return c != 0 ? c : nameOf(a.getKey()).compareToIgnoreCase(nameOf(b.getKey()));
+            });
+            sb.append("\"st\":[");
+            for (int i = 0; i < staff.size(); i++) {
+                if (i > 0) sb.append(",");
+                sb.append("[").append(str(nameOf(staff.get(i).getKey()))).append(",")
+                  .append(str(staff.get(i).getValue().name())).append("]");
             }
             sb.append("],");
         }

@@ -82,7 +82,7 @@ public class WebSigner {
         props.setProperty("private-key", privateKeyBase64);
         props.setProperty("public-key", publicKeyBase64);
         try (OutputStream out = new FileOutputStream(keyFile)) {
-            props.store(out, "Willy Money SMP website signing key. KEEP THIS FILE PRIVATE - never share private-key.\n"
+            props.store(out, "Polar Money SMP website signing key. KEEP THIS FILE PRIVATE - never share private-key.\n"
                     + "The website must contain the matching public-key (src/config.ts in the website project).");
         }
     }

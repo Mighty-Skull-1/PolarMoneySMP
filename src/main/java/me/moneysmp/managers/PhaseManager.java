@@ -16,7 +16,7 @@ public class PhaseManager {
             p.sendTitle("§6§lSMP PHASE CHANGED", phase.getDisplayName(), 10, 80, 20);
             p.playSound(p.getLocation(), Sound.UI_TOAST_CHALLENGE_COMPLETE, 1.0f, 1.0f);
         }
-        Bukkit.broadcastMessage("§6[Willy Money SMP] Tournament phase updated to: " + phase.getDisplayName());
+        Bukkit.broadcastMessage("§6[Polar Money SMP] Tournament phase updated to: " + phase.getDisplayName());
     }
 
     public void setPhaseSilently(SMPPhase phase) {

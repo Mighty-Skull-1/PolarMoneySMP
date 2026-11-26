@@ -80,7 +80,7 @@ public class RankCommand implements CommandExecutor {
             Player online = Bukkit.getPlayer(result.uuid());
             if (online != null && online != sender) {
                 online.sendMessage(rank == Rank.NONE ? "§eYour staff rank was removed."
-                        : "§aYou are now " + rank.getPrefix() + "§a on Willy Money SMP.");
+                        : "§aYou are now " + rank.getPrefix() + "§a on Polar Money SMP.");
             }
         });
         return true;

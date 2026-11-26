@@ -89,7 +89,7 @@ public class FfaManager {
         Bukkit.broadcastMessage("§6 Kills are worth §a+" + killBonus() + " §6extra during the deathmatch. Every "
                 + (rotateSeconds() / 60) + " min a tier glows and is worth another §a+" + bountyBonus() + "§6.");
         Bukkit.broadcastMessage("§6 Placings: " + rewardsLine());
-        Bukkit.broadcastMessage("§6 When it ends, the team with the most Game Credits wins Willy Money SMP!");
+        Bukkit.broadcastMessage("§6 When it ends, the team with the most Game Credits wins Polar Money SMP!");
         bountyIndex = -1;
         nextBounty();
         long ticks = rotateSeconds() * 20L;
@@ -194,12 +194,12 @@ public class FfaManager {
         Team winner = ranked.get(0);
         String winName = winner.getColorCode() + winner.getName();
         for (Player p : Bukkit.getOnlinePlayers()) {
-            p.sendTitle(winName + " §6§lWINS!", "§e" + teamCredits(winner.getName()) + " Game Credits - Willy Money SMP champions", 10, 140, 30);
+            p.sendTitle(winName + " §6§lWINS!", "§e" + teamCredits(winner.getName()) + " Game Credits - Polar Money SMP champions", 10, 140, 30);
             p.playSound(p.getLocation(), Sound.UI_TOAST_CHALLENGE_COMPLETE, 1.0f, 1.0f);
             p.playSound(p.getLocation(), Sound.ENTITY_FIREWORK_ROCKET_TWINKLE, 1.0f, 1.0f);
         }
         Bukkit.broadcastMessage("§6§m------------------------------------------");
-        Bukkit.broadcastMessage("§6§l  WILLY MONEY SMP - FINAL STANDINGS");
+        Bukkit.broadcastMessage("§6§l  POLAR MONEY SMP - FINAL STANDINGS");
         String[] medals = {"§6§l1st", "§f§l2nd", "§c§l3rd"};
         for (int i = 0; i < ranked.size(); i++) {
             Team t = ranked.get(i);
@@ -207,7 +207,7 @@ public class FfaManager {
             Bukkit.broadcastMessage("  " + place + " §r" + t.getColorCode() + t.getName() + " §8- §e" + teamCredits(t.getName()) + " Credits");
         }
         Bukkit.broadcastMessage("§6§m------------------------------------------");
-        Bukkit.broadcastMessage("§e" + winName + " §ewins Willy Money SMP! §7Final standings are on the website.");
+        Bukkit.broadcastMessage("§e" + winName + " §ewins Polar Money SMP! §7Final standings are on the website.");
     }
 
     /** Cancels the FFA with no rewards and brings everyone back. */

@@ -140,7 +140,7 @@ public class MoneySMP extends JavaPlugin {
         }
         Bukkit.getScheduler().runTask(this, () -> { if (displayManager != null) displayManager.updateAllDisplays(); });
 
-        getLogger().info("Willy Money SMP v" + getPluginMeta().getVersion() + " loaded successfully with full persistence and tournament systems!");
+        getLogger().info("Polar Money SMP v" + getPluginMeta().getVersion() + " loaded successfully with full persistence and tournament systems!");
     }
 
     @Override
@@ -154,7 +154,7 @@ public class MoneySMP extends JavaPlugin {
         safely("stop web sync", () -> { if (webServerManager != null) webServerManager.stop(); });
         safely("remove rank permissions", () -> { if (rankManager != null) rankManager.removeAll(); });
         Bukkit.getScheduler().cancelTasks(this);
-        getLogger().info("Willy Money SMP v" + getPluginMeta().getVersion() + " disabled successfully and data saved!");
+        getLogger().info("Polar Money SMP v" + getPluginMeta().getVersion() + " disabled successfully and data saved!");
     }
 
     private void safely(String what, Runnable r) {
@@ -270,7 +270,7 @@ public class MoneySMP extends JavaPlugin {
 
         // 10. Broadcast
         Bukkit.broadcastMessage("§c§l========================================");
-        Bukkit.broadcastMessage("§c§l[Willy Money SMP] FULL TOURNAMENT RESET!");
+        Bukkit.broadcastMessage("§c§l[Polar Money SMP] FULL TOURNAMENT RESET!");
         Bukkit.broadcastMessage("§e• All players restored to Survival mode at spawn.");
         Bukkit.broadcastMessage("§e• Eliminations cleared & all players revived.");
         Bukkit.broadcastMessage("§e• Tournament phase set to: " + SMPPhase.DRAFT.getDisplayName());
@@ -280,7 +280,7 @@ public class MoneySMP extends JavaPlugin {
         Bukkit.broadcastMessage("§c§l========================================");
 
         if (sender != null) {
-            sender.sendMessage("§a[Willy Money SMP] Tournament successfully reset from the beginning!");
+            sender.sendMessage("§a[Polar Money SMP] Tournament successfully reset from the beginning!");
         }
 
         // 11. Update the website right away
@@ -390,6 +390,14 @@ public class MoneySMP extends JavaPlugin {
             getConfig().set("config-version", 8);
             saveConfig();
             getLogger().info("Updated config.yml: capture points are one 12-minute capture in a 16x16 square.");
+        }
+        // The website moved from willy-money-smp-web to polar-money-smp-web (the old address is gone).
+        // Only the exact old address is replaced; a custom website-url is left alone.
+        String websiteUrl = getConfig().getString("website-url", "").trim();
+        if (websiteUrl.replaceAll("/+$", "").equalsIgnoreCase("https://willy-money-smp-web.vercel.app")) {
+            getConfig().set("website-url", "https://polar-money-smp-web.vercel.app/");
+            saveConfig();
+            getLogger().info("Updated config.yml: website-url is now https://polar-money-smp-web.vercel.app/ (the old willy address no longer works).");
         }
     }
 

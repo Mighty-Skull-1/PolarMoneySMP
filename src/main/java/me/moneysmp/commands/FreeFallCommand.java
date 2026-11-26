@@ -182,7 +182,7 @@ public class FreeFallCommand implements CommandExecutor {
             p.playSound(p.getLocation(), Sound.ENTITY_FIREWORK_ROCKET_TWINKLE, 1.0f, 1.0f);
         }
         Bukkit.broadcastMessage("§6§m------------------------------------------");
-        Bukkit.broadcastMessage("§6§l  WILLY MONEY SMP - FINAL STANDINGS");
+        Bukkit.broadcastMessage("§6§l  POLAR MONEY SMP - FINAL STANDINGS");
         String[] medals = {"§6§l1st", "§f§l2nd", "§c§l3rd"};
         for (int i = 0; i < ranked.size(); i++) {
             Team t = ranked.get(i);
@@ -190,7 +190,7 @@ public class FreeFallCommand implements CommandExecutor {
             Bukkit.broadcastMessage("  " + place + " §r" + t.getColorCode() + t.getName() + " §8- §e" + teamCredits(t) + " Credits");
         }
         Bukkit.broadcastMessage("§6§m------------------------------------------");
-        Bukkit.broadcastMessage("§e" + winName + " §ewins Willy Money SMP! §7Final standings are on the website.");
+        Bukkit.broadcastMessage("§e" + winName + " §ewins Polar Money SMP! §7Final standings are on the website.");
     }
 
     private int teamCredits(Team team) {

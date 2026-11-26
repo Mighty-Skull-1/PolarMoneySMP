@@ -1,6 +1,6 @@
-# 🏆 Willy Money SMP — Official Tournament Guide & Rulebook
+# 🏆 Polar Money SMP — Official Tournament Guide & Rulebook
 
-Welcome to **Willy Money SMP**, a high-stakes, economy-driven Minecraft tournament engine built for Paper 1.20.4.
+Welcome to **Polar Money SMP**, a high-stakes, economy-driven Minecraft tournament engine built for Paper 1.20.4.
 
 ---
 
@@ -24,7 +24,7 @@ Welcome to **Willy Money SMP**, a high-stakes, economy-driven Minecraft tourname
 ---
 
 ## 🎮 Tournament Overview
-In **Willy Money SMP**, players compete in teams led by designated Captains. The game flows through four distinct phases:
+In **Polar Money SMP**, players compete in teams led by designated Captains. The game flows through four distinct phases:
 - **Drafting**: Captains spend Draft Credits in live auctions to buy players.
 - **Resource Gathering**: A Grace Period where PvP is disabled to allow teams to prepare.
 - **Combat & Eliminations**: PvP is activated. Death triggers permadeath into Spectator mode.

@@ -37,7 +37,7 @@ public class SMPCommand implements CommandExecutor {
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         // /smp version - shows which plugin version the server is running.
         if (args.length >= 1 && (args[0].equalsIgnoreCase("version") || args[0].equalsIgnoreCase("ver"))) {
-            sender.sendMessage("§6§l[Willy Money SMP] §eRunning version §f" + plugin.getPluginMeta().getVersion()
+            sender.sendMessage("§6§l[Polar Money SMP] §eRunning version §f" + plugin.getPluginMeta().getVersion()
                     + " §7(see CHANGELOG.md for what changed)");
             return true;
         }
@@ -69,27 +69,27 @@ public class SMPCommand implements CommandExecutor {
             if (plugin != null) {
                 plugin.reloadConfig();
             }
-            sender.sendMessage("§a[Willy Money SMP] Configuration reloaded successfully!");
+            sender.sendMessage("§a[Polar Money SMP] Configuration reloaded successfully!");
             return true;
         }
 
         if (args[0].equalsIgnoreCase("save")) {
             if (dataManager != null) {
                 dataManager.saveData();
-                sender.sendMessage("§a[Willy Money SMP] All tournament data successfully saved to data.yml!");
+                sender.sendMessage("§a[Polar Money SMP] All tournament data successfully saved to data.yml!");
             }
             return true;
         }
 
         if (args[0].equalsIgnoreCase("sync")) {
             if (!(plugin instanceof me.moneysmp.MoneySMP smp) || smp.getWebServerManager() == null) {
-                sender.sendMessage("§c[Willy Money SMP] Website sync is not active!");
+                sender.sendMessage("§c[Polar Money SMP] Website sync is not active!");
                 return true;
             }
-            sender.sendMessage("§e[Willy Money SMP] Pushing live tournament standings to the website...");
+            sender.sendMessage("§e[Polar Money SMP] Pushing live tournament standings to the website...");
             smp.getWebServerManager().forcePush(result ->
                     org.bukkit.Bukkit.getScheduler().runTask(plugin, () ->
-                            sender.sendMessage((result.startsWith("Website updated") ? "§a" : "§c") + "[Willy Money SMP] " + result)));
+                            sender.sendMessage((result.startsWith("Website updated") ? "§a" : "§c") + "[Polar Money SMP] " + result)));
             return true;
         }
 
@@ -107,7 +107,7 @@ public class SMPCommand implements CommandExecutor {
             }
             plugin.getConfig().set("server-address", address);
             plugin.saveConfig();
-            sender.sendMessage("§a[Willy Money SMP] Server address set to §f" + address + "§a. The website updates in a few seconds.");
+            sender.sendMessage("§a[Polar Money SMP] Server address set to §f" + address + "§a. The website updates in a few seconds.");
             if (plugin instanceof me.moneysmp.MoneySMP smp && smp.getWebServerManager() != null) {
                 smp.getWebServerManager().requestPush();
             }
@@ -117,11 +117,11 @@ public class SMPCommand implements CommandExecutor {
         if (args[0].equalsIgnoreCase("webkey")) {
             if (!(plugin instanceof me.moneysmp.MoneySMP smp) || smp.getWebServerManager() == null
                     || smp.getWebServerManager().getPublicKey() == null) {
-                sender.sendMessage("§c[Willy Money SMP] No website signing key is loaded. Check the console for errors.");
+                sender.sendMessage("§c[Polar Money SMP] No website signing key is loaded. Check the console for errors.");
                 return true;
             }
             String key = smp.getWebServerManager().getPublicKey();
-            sender.sendMessage("§6[Willy Money SMP] Website public key §7(goes in the website's src/config.ts):");
+            sender.sendMessage("§6[Polar Money SMP] Website public key §7(goes in the website's src/config.ts):");
             if (sender instanceof Player player) {
                 net.md_5.bungee.api.chat.TextComponent comp = new net.md_5.bungee.api.chat.TextComponent("§e" + key);
                 comp.setClickEvent(new net.md_5.bungee.api.chat.ClickEvent(

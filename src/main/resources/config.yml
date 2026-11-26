@@ -52,9 +52,9 @@ draft:
 server-address: willymoneysmp.minefort.com
 
 # Website shown on the scoreboard, tab list and /website
-website-url: https://willy-money-smp-web.vercel.app/
+website-url: https://polar-money-smp-web.vercel.app/
 
-# Live website sync (https://github.com/Mighty-Skull-1/WillyMoneySMPWeb)
+# Live website sync (https://github.com/Mighty-Skull-1/PolarMoneySMPWeb)
 # Updates are signed with the key in web-signing-key.properties so nobody can post fake standings.
 # ntfy-topic must match NTFY_TOPIC in the website's src/config.ts.
 web-sync:

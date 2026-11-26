@@ -10,6 +10,28 @@ Check which version a server is running with `/smp version` (it's also shown in 
 
 ---
 
+## 3.6.3 (2026-11-26)
+
+- On startup, the plugin now fixes the old website link by itself. If the server's `config.yml` still has `website-url: https://willy-money-smp-web.vercel.app/` (that address no longer works), it is changed to `https://polar-money-smp-web.vercel.app/` and the console says so. That way `/website`, the tab list and the scoreboard show the right link.
+- Only that one line is changed, and only if it is exactly the old address. Other settings and all saved data are left alone.
+
+## 3.6.2 (2026-11-26)
+
+- The plugin's author is now listed as **Mighty**.
+- The website link now points to the new address, `polar-money-smp-web.vercel.app` (the old willy address no longer works). This is the default for new servers.
+- The README and tournament guides now say Polar Money SMP and link to the renamed website repo, `PolarMoneySMPWeb`.
+- Nothing else changed: the data folder is still `plugins/WillyMoneySMP`, and saved data and website signing are untouched.
+
+## 3.6.1 (2026-11-26)
+
+- Everything players see in game now says **Polar Money SMP** instead of Willy Money SMP: the chat prefix, titles, the scoreboard, menus, the tab list, command help and the command descriptions.
+- Nothing else changed. The plugin's internal name is still WillyMoneySMP, so its data folder (`plugins/WillyMoneySMP`), `data.yml`, fines, teams and credits stay exactly where they are. The website link and website signing work the same as before.
+
+## 3.6.0 (2026-11-26)
+
+- The website now shows the server staff. Everyone with a `/rank` (Owner or Admin) is sent to the site with the rest of the live data, and the Season 2 page shows them in a "Run by" section.
+- Changing someone's rank with `/rank set` updates the website within a few seconds. If nobody has a rank, the section is hidden.
+
 ## 3.5.1 (2026-11-26)
 
 - The jar is now called `PolarMoneySMP-<version>.jar` (for example `PolarMoneySMP-3.5.1.jar`), to match the GitHub repo's new name.

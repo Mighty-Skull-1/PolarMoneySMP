@@ -1,6 +1,6 @@
-# 🏆 Willy Money SMP — Official Tournament Guide & Rulebook
+# 🏆 Polar Money SMP — Official Tournament Guide & Rulebook
 
-Welcome to **Willy Money SMP**, a high-stakes, economy-driven Minecraft tournament engine built for **Paper 1.21+** (compatible with modern Paper / Purpur servers).
+Welcome to **Polar Money SMP**, a high-stakes, economy-driven Minecraft tournament engine built for **Paper 1.21+** (compatible with modern Paper / Purpur servers).
 
 ---
 
@@ -25,7 +25,7 @@ Welcome to **Willy Money SMP**, a high-stakes, economy-driven Minecraft tourname
 ---
 
 ## 🎮 Tournament Overview
-In **Willy Money SMP**, players compete in teams led by designated Captains. The tournament progresses through four structured phases:
+In **Polar Money SMP**, players compete in teams led by designated Captains. The tournament progresses through four structured phases:
 - **Drafting**: Captains spend Draft Credits in live 30-second auctions (bids go up 5 at a time; highest bid when the clock runs out wins) to build their rosters.
 - **Resource Gathering**: A Grace Period where PvP is strictly disabled so teams can mine and gear up.
 - **Combat & Eliminations**: Full PvP enabled. Deaths trigger permadeath into Spectator mode with lightning strikes and global sound effects.
@@ -267,7 +267,7 @@ Ops can do everything an Owner can.
 ## Live website sync
 
 The plugin pushes the standings, draft auction and draft pool to the website
-(https://github.com/Mighty-Skull-1/WillyMoneySMPWeb) through the public ntfy.sh relay.
+(https://github.com/Mighty-Skull-1/PolarMoneySMPWeb) through the public ntfy.sh relay.
 
 - Updates go out whenever something changes (checked every 2 seconds), plus a heartbeat every minute.
 - Every update is signed with `plugins/WillyMoneySMP/web-signing-key.properties`. The website only accepts
