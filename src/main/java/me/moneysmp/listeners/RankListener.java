@@ -11,7 +11,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
-/** Gives ranked players their permissions on join, and shows [Owner] / [Admin] before their name in chat. */
+/** Gives ranked players their permissions on join, and shows [Owner] / [Admin] / [Sub] before their name in chat. */
 public class RankListener implements Listener {
     private final RankManager rankManager;
 

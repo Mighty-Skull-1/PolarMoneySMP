@@ -12,11 +12,12 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
- * Owner / Admin ranks by UUID (saved in data.yml under "ranks", works for offline players).
+ * Owner / Admin / Sub ranks by UUID (saved in data.yml under "ranks", works for offline players).
  *
  * Ranks are turned into permissions while the player is online:
  *  - Admin: moneysmp.admin  -> events, draft, fines, subs, teams, tiers, credits...
  *  - Owner: moneysmp.admin + moneysmp.owner -> everything, including reset / reload / config changes.
+ *  - Sub: no permissions, just the [Sub] tag.
  * Ops already have both permissions by default. /rank itself is ops and console only.
  */
 public class RankManager {
@@ -55,7 +56,7 @@ public class RankManager {
             try { player.removeAttachment(old); } catch (IllegalArgumentException ignored) {}
         }
         Rank rank = getRank(player.getUniqueId());
-        if (rank != Rank.NONE) {
+        if (rank.isStaff()) {
             PermissionAttachment att = player.addAttachment(plugin);
             att.setPermission(ADMIN_PERMISSION, true);
             if (rank == Rank.OWNER) att.setPermission(OWNER_PERMISSION, true);

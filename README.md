@@ -205,13 +205,14 @@ After running tests, you can completely reset everything to the beginning:
   - All ongoing events stopped.
   - `data.yml` wiped fresh (staff ranks and saved player names are kept).
 
-### Staff Ranks (Owner / Admin)
-Set with **`/rank set <player> owner|admin|none`** (see everyone with `/rank list`). Only **server operators and the console** can use `/rank` - not Admins, not Owners. Works for offline players and players who have never joined. Ranks are saved by UUID in `data.yml`.
+### Ranks (Owner / Admin / Sub)
+Set with **`/rank set <player> owner|admin|sub|none`** (see everyone with `/rank list`). Only **server operators and the console** can use `/rank` - not Admins, not Owners. Works for offline players and players who have never joined. Ranks are saved by UUID in `data.yml`.
 
 | Rank | Shown as | Can do |
 | :--- | :--- | :--- |
 | **Owner** | `[Owner]` before the name in tab and chat | Every plugin command (except `/rank`, which is ops only). |
 | **Admin** | `[Admin]` before the name in tab and chat | Run events, the draft, fines, subs, teams, tiers and credits. **Not**: `/smp reset`, `/smp reload`, `/smp setip` (or the Reload/Reset buttons in `/smp`), or `/rank`. |
+| **Sub** | `[Sub]` before the name in tab and chat | Nothing extra - it just shows who is a sub. Subs are not listed as staff on the website. |
 
 Ops can do everything an Owner can.
 

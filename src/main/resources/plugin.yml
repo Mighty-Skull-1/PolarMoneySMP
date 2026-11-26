@@ -1,5 +1,5 @@
 name: WillyMoneySMP
-version: 3.6.3
+version: 3.7.0
 main: me.moneysmp.MoneySMP
 api-version: 1.20
 authors: [Mighty]
@@ -56,7 +56,7 @@ commands:
     description: View and manage banned tournament items and restrictions
     aliases: [banned, banlist, bannedlist]
   rank:
-    description: "Ops/console only: set a staff rank (/rank set <player> owner|admin|none, /rank list)"
+    description: "Ops/console only: set a staff rank (/rank set <player> owner|admin|sub|none, /rank list)"
 
 permissions:
   moneysmp.admin:

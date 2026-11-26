@@ -116,7 +116,7 @@ public class MoneySMPTabCompleter implements TabCompleter {
             } else if (args.length == 2 && args[0].equalsIgnoreCase("set")) {
                 for (Player player : Bukkit.getOnlinePlayers()) candidates.add(player.getName());
             } else if (args.length == 3 && args[0].equalsIgnoreCase("set")) {
-                candidates.addAll(Arrays.asList("owner", "admin", "none"));
+                candidates.addAll(Arrays.asList("owner", "admin", "sub", "none"));
             }
         } else if (command.getName().equalsIgnoreCase("tier")) {
             if (args.length == 1) {

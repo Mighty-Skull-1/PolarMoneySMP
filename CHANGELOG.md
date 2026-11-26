@@ -10,6 +10,13 @@ Check which version a server is running with `/smp version` (it's also shown in 
 
 ---
 
+## 3.7.0 (2026-11-26)
+
+- New **Sub** rank for substitute players: `/rank set <player> sub`. They get a blue `[Sub]` tag before their name in tab and chat, and show up in `/rank list` under the Owners and Admins.
+- Subs get no admin powers. It's only a tag.
+- Subs are not staff, so they don't appear in the website's "Run by" section.
+- Remove it like any other rank with `/rank set <player> none`.
+
 ## 3.6.3 (2026-11-26)
 
 - On startup, the plugin now fixes the old website link by itself. If the server's `config.yml` still has `website-url: https://willy-money-smp-web.vercel.app/` (that address no longer works), it is changed to `https://polar-money-smp-web.vercel.app/` and the console says so. That way `/website`, the tab list and the scoreboard show the right link.

@@ -443,7 +443,7 @@ public class WebServerManager {
         // Staff (/rank): [[name, "OWNER"|"ADMIN"]], owners first, then by name. Empty list = nobody has a rank.
         if (plugin instanceof me.moneysmp.MoneySMP smp && smp.getRankManager() != null) {
             List<Map.Entry<UUID, me.moneysmp.models.Rank>> staff = new ArrayList<>(smp.getRankManager().getAllRanks().entrySet());
-            staff.removeIf(e -> e.getValue() == me.moneysmp.models.Rank.NONE);
+            staff.removeIf(e -> !e.getValue().isStaff()); // Subs aren't staff, so they stay off "Run by"
             staff.sort((a, b) -> {
                 int c = Integer.compare(a.getValue().ordinal(), b.getValue().ordinal());
                 return c != 0 ? c : nameOf(a.getKey()).compareToIgnoreCase(nameOf(b.getKey()));
