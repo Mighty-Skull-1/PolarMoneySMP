@@ -280,6 +280,11 @@ The plugin pushes the standings, draft auction and draft pool to the website
 - `/smp version` shows which plugin version the server is running (see CHANGELOG.md).
 - `/smp setip <address>` changes the server address shown on the website (saved as `server-address` in `config.yml`). Owners only.
 - Settings live under `web-sync:` in `config.yml` (`ntfy-topic` must match `NTFY_TOPIC` on the website).
+- **ntfy limits:** without an account, ntfy.sh allows only 250 updates a day per server IP, then answers
+  "HTTP 429 (rate limited)". To lift that, make an access token in your ntfy account (Account > Access tokens),
+  put it in `config.yml` as `web-sync.ntfy-token` and run `/smp reload`. `/smp sync` shows whether it's set.
+  **Keep the token secret: never share or commit it.** If you reserve the topic in ntfy, give everyone
+  read access, or the website can't read the updates.
 
 ## Updating safely
 

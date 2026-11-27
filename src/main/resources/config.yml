@@ -61,6 +61,10 @@ web-sync:
   enabled: true
   ntfy-server: https://ntfy.sh
   ntfy-topic: willymoneysmp_leaderboard_live
+  # Access token from your ntfy account (ntfy.sh > Account > Access tokens, starts with tk_).
+  # Without one, ntfy.sh only allows 250 updates a day per server IP and then returns HTTP 429.
+  # With one, your account's limits apply instead (Pro: 20,000 a day). Keep it secret. After changing it: /smp reload
+  ntfy-token: ""
   heartbeat-seconds: 60
 
 # Optional local REST API (the website does not need this).

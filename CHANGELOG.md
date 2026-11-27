@@ -10,6 +10,12 @@ Check which version a server is running with `/smp version` (it's also shown in 
 
 ---
 
+## 3.8.0 (2026-11-27)
+
+- **The website sync can use your ntfy account.** Put your ntfy access token in `config.yml` under `web-sync.ntfy-token`, then run `/smp reload`. Updates then count against your account's limit (Pro: 20,000 a day) instead of the free 250 a day per server IP. Going over the free limit is what caused the "HTTP 429 (rate limited)" errors.
+- The new `ntfy-token` setting is added to your server's `config.yml` automatically, empty. Nothing changes until you fill it in.
+- `/smp sync` now says whether a token is set. A 429 error says when it's because no token is set, and a wrong token gives a clear message.
+
 ## 3.7.1 (2026-11-26)
 
 - **Your data is kept safe on every update.** When a new version starts for the first time, it copies `data.yml`, `fines.yml`, `events-state.yml`, `banned-items.yml` and `config.yml` into `backups/update_<date>_from-<old>_to-<new>/` before loading anything.

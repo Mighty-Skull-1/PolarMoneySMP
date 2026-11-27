@@ -87,6 +87,9 @@ public class SMPCommand implements CommandExecutor {
                 return true;
             }
             sender.sendMessage("§e[Polar Money SMP] Pushing live tournament standings to the website...");
+            sender.sendMessage(smp.getWebServerManager().hasNtfyToken()
+                    ? "§7ntfy access token: §aset §7(your ntfy account's limits apply)"
+                    : "§7ntfy access token: §cnot set §7(free limit: 250 updates a day). Add it to config.yml under web-sync.ntfy-token, then /smp reload.");
             smp.getWebServerManager().forcePush(result ->
                     org.bukkit.Bukkit.getScheduler().runTask(plugin, () ->
                             sender.sendMessage((result.startsWith("Website updated") ? "§a" : "§c") + "[Polar Money SMP] " + result)));

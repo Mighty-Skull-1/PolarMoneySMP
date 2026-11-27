@@ -163,6 +163,18 @@ public class WebServerManager {
         return base + "/" + topic;
     }
 
+    /**
+     * ntfy access token (web-sync.ntfy-token). With one, messages count against that ntfy account's
+     * limits (e.g. Pro: 20,000 a day) instead of the anonymous 250 a day per IP address.
+     */
+    private String ntfyToken() {
+        String token = plugin.getConfig().getString("web-sync.ntfy-token", "");
+        return token == null ? "" : token.trim();
+    }
+
+    /** True when an ntfy access token is set in config.yml. */
+    public boolean hasNtfyToken() { return !ntfyToken().isEmpty(); }
+
     private long heartbeatMs() {
         return Math.max(15, plugin.getConfig().getInt("web-sync.heartbeat-seconds", 60)) * 1000L;
     }
@@ -266,6 +278,7 @@ public class WebServerManager {
 
     private void send(String payload, Consumer<String> callback) {
         final String url = ntfyUrl();
+        final String token = ntfyToken();
         sendInFlight = true;
         try {
             sender.submit(() -> {
@@ -279,10 +292,20 @@ public class WebServerManager {
                         plugin.getLogger().warning("[WebSync] Update is " + bytes.length + " bytes (ntfy limit " + NTFY_MESSAGE_LIMIT
                                 + "). It will be sent as an attachment; the website handles this but it is slower.");
                     }
-                    int code = post(url, bytes);
+                    int code = post(url, bytes, token);
                     boolean ok = code >= 200 && code < 300;
-                    result = ok ? "Website updated (HTTP " + code + ")."
-                            : "Cloud relay returned HTTP " + code + (code == 429 ? " (rate limited)" : "");
+                    if (ok) {
+                        result = "Website updated (HTTP " + code + ").";
+                    } else if (code == 429) {
+                        result = "Cloud relay returned HTTP 429 (rate limited)" + (token.isEmpty()
+                                ? " - no ntfy access token is set, so the free limit of 250 a day applies. Add one to config.yml (web-sync.ntfy-token)."
+                                : " - the ntfy account's limit was reached.");
+                    } else if (code == 401 || code == 403) {
+                        result = "Cloud relay returned HTTP " + code + " - ntfy didn't accept the access token, or it can't post to this topic. "
+                                + "Check web-sync.ntfy-token in config.yml.";
+                    } else {
+                        result = "Cloud relay returned HTTP " + code;
+                    }
                     recordResult(ok, code == 429, result);
                 } catch (Exception e) {
                     result = "Push failed: " + e.getMessage();
@@ -300,13 +323,14 @@ public class WebServerManager {
     }
 
     /** Returns the HTTP status code. */
-    private int post(String url, byte[] body) throws IOException {
+    private int post(String url, byte[] body, String token) throws IOException {
         HttpURLConnection conn = (HttpURLConnection) new URL(url).openConnection();
         conn.setRequestMethod("POST");
         conn.setDoOutput(true);
         conn.setConnectTimeout(6000);
         conn.setReadTimeout(6000);
         conn.setRequestProperty("Content-Type", "text/plain; charset=UTF-8");
+        if (!token.isEmpty()) conn.setRequestProperty("Authorization", "Bearer " + token);
         conn.setRequestProperty("User-Agent", "WillyMoneySMP-Plugin");
         try (OutputStream os = conn.getOutputStream()) {
             os.write(body);
